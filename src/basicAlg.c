@@ -1,21 +1,22 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define FILELOC "../data/output.txt"
+#define FILELOC "../data/stripped.txt"
+#define EOF 1
 
 int main(void) {
 	FILE *contentFile;
-	float* content;	
-	int contentSize = 150*150*90;
-	
-	*content = 0.14;
+	float *content = malloc((150*150*90)*sizeof(float));
+	int i = 0;
+
 	contentFile = fopen(FILELOC,"r");
 
-	while (fscanf(contentFile, "%f", content) == 1) {
-		printf("%.6f\n", content);
+	while (fscanf(contentFile, "%f", &content[i]) == EOF) {
+		printf("%f\n", content[i]);
+		i++;
 	}
-	//content = malloc(sizeof(float) * contentSize; 
 
-	//free(content);
+	free(content);
 
 	return 0;
 }
