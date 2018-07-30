@@ -1,0 +1,7 @@
+  2025000 complete_sim.txt.clean
+  2025000 one_half_sim.txt.clean
+  2025000 one_quarter_sim.txt.clean
+  2024863 one_third_sim.txt.clean
+  2025000 three_quarter_sim.txt.clean
+  2025000 two_third_sim.txt.clean
+ 12149863 total
