@@ -1,0 +1,2 @@
+Size of runlength array: 2024999
+In bytes : 16199992 

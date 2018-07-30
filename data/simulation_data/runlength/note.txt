@@ -1,0 +1,1 @@
+Run length compression stats for all 6 data dumps traversing data LEFT->RIGHT 

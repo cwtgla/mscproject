@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define FILELOC "../data/simulation_data/one_half_sim.txt.clean"
+//#define FILELOC "../data/simulation_data/one_half_sim.txt.clean"
 //#define FILELOC "../data/simulation_data/complete_sim.txt.clean"
 //#define FILELOC "../data/simulation_data/one_quarter_sim.txt.clean"
 //#define FILELOC "../data/simulation_data/one_third_sim.txt.clean"
 //#define FILELOC "../data/simulation_data/three_quarter_sim.txt.clean"
-//#define FILELOC "../data/simulation_data/two_third_sim.txt.clean"
+#define FILELOC "../data/simulation_data/two_third_sim.txt.clean"
 #define LINECOUNT 2025000
 
 struct entry {

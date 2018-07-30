@@ -1,8 +1,17 @@
 # mscproject
-MSc Project - compressing floating point 3d arrays on gpus for weather simulations
+Run-length encoding on GPUs for weather simulations using OpenCL.
 
-TODO LIST
-Implement runlength encoding to see size using that compression - morning
-Implement white paper encoding to see size using that compression - morning
-Talk to Wim about how to deal with being on the edges and calculating
-Research more compression
+## State of play
+
+### TO-DO list
+TO-DOs as of 30/7/18.
+
+'''
+Double check run-length encoding code
+'''
+'''
+Create a basic python script for rounding numbers to check for better compression ratios
+'''
+'''
+Implement transformation algorithm just on C to deal with edge cases before OpenCL port
+'''
