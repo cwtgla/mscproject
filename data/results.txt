@@ -1,5 +1,0 @@
-ZFP
-8100000 bytes down to 5664160 (1.43x)
-
-Runlength
-8100000 bytes up to...16199992
