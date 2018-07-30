@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define FILELOC "../data/stripped.txt"
-#define TESTFILELOC "../data/runlength.txt" //testfile with 13 lines expected to turn to 10
-#define ILEN 150
-#define JLEN 150
-#define KLEN 90
+#define FILELOC "../data/simulation_data/one_half_sim.txt.clean"
+//#define FILELOC "../data/simulation_data/complete_sim.txt.clean"
+//#define FILELOC "../data/simulation_data/one_quarter_sim.txt.clean"
+//#define FILELOC "../data/simulation_data/one_third_sim.txt.clean"
+//#define FILELOC "../data/simulation_data/three_quarter_sim.txt.clean"
+//#define FILELOC "../data/simulation_data/two_third_sim.txt.clean"
+#define LINECOUNT 2025000
 
 struct entry {
 	float value;
@@ -14,31 +16,24 @@ struct entry {
 };
 
 int main(void) {
-	int limit = ILEN*JLEN*KLEN;
-	//int limit = 13;
-
-	//Read in FPs into an array
+	//read floating points into array
 	FILE *contentFile;
-	float *content = calloc(limit,sizeof(float));
-	contentFile = fopen(FILELOC,"r");
+	float *content = calloc(LINECOUNT, sizeof(float));
+	contentFile = fopen(FILELOC, "r");
 
+	//while not EOF
 	int i = 0;
 	while (fscanf(contentFile, "%f", &content[i]) == 1) {
 		i++;
 	}
 
 	//Init runlength array
-	struct entry* entries = calloc(sizeof(struct entry),limit);
+	struct entry* entries = calloc(LINECOUNT, sizeof(struct entry));
 	entries[0].count = 1;
 	entries[0].value = content[0];
 
-//	for(i = 0; i < limit; i++) {
-//		printf("val %.8f\n", content[i]);
-//	}
-
 	int entryIndex = 0;
-
-	for(i=1; i < limit; i++) {
+	for(i=1; i < LINECOUNT; i++) {
 		if(entries[entryIndex].value == content[i]) { //if last value is same as next
 			entries[entryIndex].count++;
 		} else {
@@ -49,12 +44,9 @@ int main(void) {
 	}	
 	free(content);
 	free(entries);
+
 	printf("Size of runlength array: %d\n", entryIndex+1);
-	printf("In bytes : %d ", (entryIndex+1)*sizeof(struct entry));
+	printf("In bytes : %lu ", (entryIndex+1)*sizeof(struct entry));
+
 	return 0;
 }
-
-
-
-//grab 1st item and save it in entry 0 and the count being 1
-//then for every other element, if value is the same as previous then increment count and move on,
