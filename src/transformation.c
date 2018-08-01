@@ -35,8 +35,12 @@ int main(void) {
 	}
 
 	//for each index e.g. from index 0 to linecount-1	
-	printf("%d\n", F3D2C(150,150,0,0,0,0,0,0));
+	printf("%d\n", F3D2C(150,150,0,0,0,150,0,0)); //start of all
+	printf("%d\n", F3D2C(150,150,0,0,0,1,0,0)); //last i ind
+	printf("%d\n", F3D2C(150,150,0,0,0,0,1,0));
+	printf("%d\n", F3D2C(150,150,0,0,0,0,0,1));
 
+	//F3D2C iBounds, jBounds, iBase, jBase, kBase, iInd, jInd, kInd
 	free(content);	
 
 	return 0;
