@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+float globalMax = -10000.0f;
+float globalMin = 10000.0f;
+
 //assumes 0'd out files array
 void getAbsFilenames(char* basedir, char* files[], char* extension) {
 	struct dirent *directoryEntry;
@@ -29,16 +32,27 @@ void displayStats(char* filePath) {
 	float min = 10000.0f;
 	float max = -10000.0f;
 	float currentVal;
+	unsigned int count = 0;
+	float total = 0.0f;
 
 	contentFile = fopen(filePath, "r");
 	while(fscanf(contentFile, "%f", &currentVal) == 1) {
+		total+=currentVal;
+		count++;
+
 		if(currentVal > max)
 			max = currentVal;
 		if(currentVal < min)
 			min = currentVal;
 	}
 	fclose(contentFile);
-	printf("For file: %s\nMax: %f\nMin: %f\n", filePath, max, min);
+	if(globalMax < max)
+		globalMax = max;
+	if(globalMin > min)
+		globalMin = min;
+
+	printf("*****STATS*****\n");
+	printf("For file: %s\nMax: %f\nMin: %f\nMean value: %f\nTotal number of values: %d\n", filePath, max, min, (total/count), count);
 }
 
 int main(int argc, char* argv[]) {
@@ -57,12 +71,14 @@ int main(int argc, char* argv[]) {
 		printf("%d : %s\n", i+1, files[i]);
 	}
 
-	//displayStats(files[0]);
+	printf("Getting stats for files..\n");
 	//Get each files stats
-	//for(i = 0; i < 6; i++) {
-	//	displayStats(files[i]);
-	//}
+	for(i = 0; i < 6; i++) {
+		displayStats(files[i]);
+	}
 
+	printf("Global stats..\n");
+	printf("Largest value found across files: %f. Smallest value found: %f\n", globalMax, globalMin);
 
 	//struct dirent *directoryEntry;
 	//DIR *directory = opendir(argv[1]);
