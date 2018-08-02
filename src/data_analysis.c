@@ -25,6 +25,11 @@ void getAbsFilenames(char* basedir, char* files[], char* extension) {
 }
 
 int main(int argc, char* argv[]) {
+	if(argc < 3) {
+		printf("Missing additional params\n");
+		return -1;
+	}
+
 	char *files[10];
 	getAbsFilenames(argv[1], files, ".txt.clean");
 	
