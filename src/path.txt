@@ -1,1 +1,1 @@
-/home/crags/Documents/project/workspace/compressor-repo/data/simulation_data/
+/home/crags/Documents/compressor-repo/data/simulation_data

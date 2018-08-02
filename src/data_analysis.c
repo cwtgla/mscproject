@@ -24,20 +24,45 @@ void getAbsFilenames(char* basedir, char* files[], char* extension) {
 	}
 }
 
+void displayStats(char* filePath) {
+	FILE *contentFile;
+	float min = 10000.0f;
+	float max = -10000.0f;
+	float currentVal;
+
+	contentFile = fopen(filePath, "r");
+	while(fscanf(contentFile, "%f", &currentVal) == 1) {
+		if(currentVal > max)
+			max = currentVal;
+		if(currentVal < min)
+			min = currentVal;
+	}
+	fclose(contentFile);
+	printf("For file: %s\nMax: %f\nMin: %f\n", filePath, max, min);
+}
+
 int main(int argc, char* argv[]) {
-	if(argc < 3) {
-		printf("Missing additional params\n");
+	if(argc < 2) {
+		printf("Missing additional params, recieved: %d\n", argc);
 		return -1;
 	}
-
+	printf("Getting files in %s\n", argv[1]);
+	//Grab absolute path of all relevant files
 	char *files[10];
 	getAbsFilenames(argv[1], files, ".txt.clean");
 	
-//char*[] files = getAbsFilenames(argv[1]);
 	int i = 0;
+	printf("Found files..\n");
 	for(i = 0; i < 6; i++) {
-		printf("%s\n", files[i]);
+		printf("%d : %s\n", i+1, files[i]);
 	}
+
+	//displayStats(files[0]);
+	//Get each files stats
+	//for(i = 0; i < 6; i++) {
+	//	displayStats(files[i]);
+	//}
+
 
 	//struct dirent *directoryEntry;
 	//DIR *directory = opendir(argv[1]);
