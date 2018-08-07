@@ -6,6 +6,11 @@
 float globalMax = -10000.0f;
 float globalMin = 10000.0f;
 
+struct rlEntry {
+	float value;
+	uint count;
+};
+
 //assumes 0'd out files array
 void getAbsFilenames(char* basedir, char* files[], char* extension) {
 	struct dirent *directoryEntry;
@@ -27,6 +32,30 @@ void getAbsFilenames(char* basedir, char* files[], char* extension) {
 	}
 }
 
+void runlengthStats(float* values, int count) {
+	struct rlEntry *entries = calloc(count, sizeof(struct rlEntry));
+	entries[0].count = 1;
+	entries[0].value = values[0];
+
+	int i;
+	int entryIndex = 0;
+	for(i = 1; i < count; i++) {
+		if(entries[entryIndex].value == values[i]) {
+			entries[entryIndex].count++;
+		} else {
+			entryIndex++;
+			entries[entryIndex].value = values[i];
+			entries[entryIndex].count = 1;
+		}
+	}
+
+	free(entries);
+	printf("\t*****RUNLENGTH STATS *****\n");
+	printf("\tNumber of indexes in runlength array %d, a net reduction in %d indexes\n\tSize in bytes of runlength array %lu bytes\n", entryIndex, count-entryIndex, sizeof(struct rlEntry)*entryIndex);
+
+}
+
+//Get basic file stats (max,min,mean and number of values)
 void displayStats(char* filePath) {
 	FILE *contentFile;
 	float min = 10000.0f;
@@ -36,14 +65,18 @@ void displayStats(char* filePath) {
 	float total = 0.0f;
 
 	contentFile = fopen(filePath, "r");
-	while(fscanf(contentFile, "%f", &currentVal) == 1) {
-		total+=currentVal;
-		count++;
+	float *content = calloc(150*150*90, sizeof(float));
+	int i = 0;
 
-		if(currentVal > max)
-			max = currentVal;
-		if(currentVal < min)
-			min = currentVal;
+	while(fscanf(contentFile, "%f", &content[i]) == 1) {
+		total+=content[i];
+		count++;
+	
+		if(content[i] > max)
+			max = content[i];
+		if(content[i] < min)
+			min = content[i];
+		i++;
 	}
 	fclose(contentFile);
 	if(globalMax < max)
@@ -52,7 +85,10 @@ void displayStats(char* filePath) {
 		globalMin = min;
 
 	printf("*****STATS*****\n");
-	printf("For file: %s\nMax: %f\nMin: %f\nMean value: %f\nTotal number of values: %d\n", filePath, max, min, (total/count), count);
+	printf("\tFor file: %s\n\tMax: %f\n\tMin: %f\n\tMean value: %f\n\tTotal number of values: %d\n\tStorage size as is: %lu bytes\n", filePath, max, min, (total/count), count, count*sizeof(float));
+	runlengthStats(content, count);
+	
+	free(content);
 }
 
 int main(int argc, char* argv[]) {
