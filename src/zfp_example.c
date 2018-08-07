@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "zfp.h"
+#include "/home/crags/Documents/zfp/include/zfp.h"
+#include "zfp_example.h"
 
 /* compress or decompress array */
-static int
-compress(float* array, int nx, int ny, int nz, double tolerance, int decompress)
+size_t compress(float* array, int nx, int ny, int nz, double tolerance, int decompress)
 {
   int status = 0;    /* return value: 0 = success */
   zfp_type type;     /* array scalar type */
@@ -69,26 +69,5 @@ compress(float* array, int nx, int ny, int nz, double tolerance, int decompress)
   free(buffer);
   free(array);
 
-  return status;
-}
-
-int main(int argc, char* argv[])
-{
-  /* use -d to decompress rather than compress data */
-  int decompress = (argc == 2 && !strcmp(argv[1], "-d"));
-
-  float *array = malloc((150*150*90)*sizeof(float));
-  FILE *cFile;
-  cFile = fopen("/home/crags/Documents/project/workspace/compressor-repo/data/stripped.txt","r");
-
-  int i = 0;
-  while(fscanf(cFile, "%f", &array[i]) == 1) {
-    i++;
-  }
-
-  printf("Initial size : %d", 150*150*90*sizeof(float));
-
-  //return 0;
-  /* compress or decompress array */
-  return compress(array, 150, 150, 90, 0.0, decompress);
+  return zfpsize;
 }

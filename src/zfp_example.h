@@ -1,0 +1,6 @@
+#ifndef ZFP_EXAMPLE_H_
+#define ZFP_EXAMPLE_H_
+
+size_t compress(float *arrau, int nx, int ny, int nz, double tolerance, int decompress);
+
+#endif //ZFP_EXAMPLE_H_

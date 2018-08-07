@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdlib.h>
+#include "zfp_example.h"
 
 float globalMax = -10000.0f;
 float globalMin = 10000.0f;
@@ -12,7 +13,7 @@ struct rlEntry {
 };
 
 //assumes 0'd out files array
-void getAbsFilenames(char* basedir, char* files[], char* extension) {
+void getAbsFilenames(char *basedir, char *files[], char *extension) {
 	struct dirent *directoryEntry;
 	DIR *directory = opendir(basedir);
 	int pathLen = strlen(basedir)+1; //for null char
@@ -32,7 +33,7 @@ void getAbsFilenames(char* basedir, char* files[], char* extension) {
 	}
 }
 
-void runlengthStats(float* values, int count) {
+void runlengthStats(float *values, int count) {
 	struct rlEntry *entries = calloc(count, sizeof(struct rlEntry));
 	entries[0].count = 1;
 	entries[0].value = values[0];
@@ -52,11 +53,18 @@ void runlengthStats(float* values, int count) {
 	free(entries);
 	printf("\t*****RUNLENGTH STATS *****\n");
 	printf("\tNumber of indexes in runlength array %d, a net reduction in %d indexes\n\tSize in bytes of runlength array %lu bytes\n", entryIndex, count-entryIndex, sizeof(struct rlEntry)*entryIndex);
+}
 
+//Print stats from using zfp to compress values
+void zfpStats(float *values, int count) {
+	printf("\t*****ZFP STATS *****\n");
+	size_t compressedSize;
+	compressedSize = compress(values, 150, 150, 90, 0.00, 0);
+	printf("\tSize after zfp compression %lu bytes\n", compressedSize);
 }
 
 //Get basic file stats (max,min,mean and number of values)
-void displayStats(char* filePath) {
+void displayStats(char *filePath) {
 	FILE *contentFile;
 	float min = 10000.0f;
 	float max = -10000.0f;
@@ -86,12 +94,14 @@ void displayStats(char* filePath) {
 
 	printf("*****STATS*****\n");
 	printf("\tFor file: %s\n\tMax: %f\n\tMin: %f\n\tMean value: %f\n\tTotal number of values: %d\n\tStorage size as is: %lu bytes\n", filePath, max, min, (total/count), count, count*sizeof(float));
-	runlengthStats(content, count);
 	
+	runlengthStats(content, count);
+	zfpStats(content, count);
+
 	free(content);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 	if(argc < 2) {
 		printf("Missing additional params, recieved: %d\n", argc);
 		return -1;
