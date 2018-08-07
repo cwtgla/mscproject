@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "/home/crags/Documents/zfp/include/zfp.h"
 #include "zfp_example.h"
+#include "zfp.h"
 
 /* compress or decompress array */
 size_t compress(float* array, int nx, int ny, int nz, double tolerance, int decompress)
@@ -57,7 +57,7 @@ size_t compress(float* array, int nx, int ny, int nz, double tolerance, int deco
       status = 1;
     }
     else {
-      printf("Compressed size: %lu", zfpsize);
+//      printf("Compressed size: %lu", zfpsize);
       //fwrite(buffer, 1, zfpsize, stdout);
     }
   }
@@ -67,7 +67,7 @@ size_t compress(float* array, int nx, int ny, int nz, double tolerance, int deco
   zfp_stream_close(zfp);
   stream_close(stream);
   free(buffer);
-  free(array);
+  //free(array);
 
   return zfpsize;
 }

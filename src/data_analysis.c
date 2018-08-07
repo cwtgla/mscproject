@@ -51,16 +51,16 @@ void runlengthStats(float *values, int count) {
 	}
 
 	free(entries);
-	printf("\t*****RUNLENGTH STATS *****\n");
-	printf("\tNumber of indexes in runlength array %d, a net reduction in %d indexes\n\tSize in bytes of runlength array %lu bytes\n", entryIndex, count-entryIndex, sizeof(struct rlEntry)*entryIndex);
+	printf("\t\t*****RUNLENGTH STATS *****\n");
+	printf("\t\tNumber of indexes in runlength array %d, a net reduction in %d indexes\n\t\tSize in bytes of runlength array %lu bytes\n", entryIndex, count-entryIndex, sizeof(struct rlEntry)*entryIndex);
 }
 
 //Print stats from using zfp to compress values
 void zfpStats(float *values, int count) {
-	printf("\t*****ZFP STATS *****\n");
+	printf("\t\t\t*****ZFP STATS *****\n");
 	size_t compressedSize;
 	compressedSize = compress(values, 150, 150, 90, 0.00, 0);
-	printf("\tSize after zfp compression %lu bytes\n", compressedSize);
+	printf("\t\t\tSize after zfp compression %lu bytes\n", compressedSize);
 }
 
 //Get basic file stats (max,min,mean and number of values)

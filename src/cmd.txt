@@ -1,0 +1,1 @@
+gcc -I/home/crags/Documents/zfp/include/ zfp_example.c data_analysis.c -lzfp -o tes
