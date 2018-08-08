@@ -1,0 +1,83 @@
+Getting files in /home/crags/Documents/compressor-repo/data/simulation_data/
+Found files..
+1 : /home/crags/Documents/compressor-repo/data/simulation_data/one_half_sim.txt.clean
+2 : /home/crags/Documents/compressor-repo/data/simulation_data/one_quarter_sim.txt.clean
+3 : /home/crags/Documents/compressor-repo/data/simulation_data/three_quarter_sim.txt.clean
+4 : /home/crags/Documents/compressor-repo/data/simulation_data/two_third_sim.txt.clean
+5 : /home/crags/Documents/compressor-repo/data/simulation_data/complete_sim.txt.clean
+6 : /home/crags/Documents/compressor-repo/data/simulation_data/one_third_sim.txt.clean
+Getting stats for files..
+*****STATS*****
+	For file: /home/crags/Documents/compressor-repo/data/simulation_data/one_half_sim.txt.clean
+	Max: 12.651135
+	Min: -11.630094
+	Mean value: -0.034482
+	Total number of values: 2025000
+	Storage size as is: 8100000 bytes
+		*****RUNLENGTH STATS *****
+		Number of indexes in runlength array 2024998, a net reduction in 2 indexes
+		Size in bytes of runlength array 16199984 bytes
+			*****ZFP STATS *****
+			Size after zfp compression 5664160 bytes
+*****STATS*****
+	For file: /home/crags/Documents/compressor-repo/data/simulation_data/one_quarter_sim.txt.clean
+	Max: 13.074379
+	Min: -16.119495
+	Mean value: -0.039106
+	Total number of values: 2025000
+	Storage size as is: 8100000 bytes
+		*****RUNLENGTH STATS *****
+		Number of indexes in runlength array 2024994, a net reduction in 6 indexes
+		Size in bytes of runlength array 16199952 bytes
+			*****ZFP STATS *****
+			Size after zfp compression 5505656 bytes
+*****STATS*****
+	For file: /home/crags/Documents/compressor-repo/data/simulation_data/three_quarter_sim.txt.clean
+	Max: 14.523329
+	Min: -10.953383
+	Mean value: -0.036151
+	Total number of values: 2025000
+	Storage size as is: 8100000 bytes
+		*****RUNLENGTH STATS *****
+		Number of indexes in runlength array 2024998, a net reduction in 2 indexes
+		Size in bytes of runlength array 16199984 bytes
+			*****ZFP STATS *****
+			Size after zfp compression 5723632 bytes
+*****STATS*****
+	For file: /home/crags/Documents/compressor-repo/data/simulation_data/two_third_sim.txt.clean
+	Max: 12.863817
+	Min: -11.706923
+	Mean value: -0.036299
+	Total number of values: 2025000
+	Storage size as is: 8100000 bytes
+		*****RUNLENGTH STATS *****
+		Number of indexes in runlength array 2024998, a net reduction in 2 indexes
+		Size in bytes of runlength array 16199984 bytes
+			*****ZFP STATS *****
+			Size after zfp compression 5662768 bytes
+*****STATS*****
+	For file: /home/crags/Documents/compressor-repo/data/simulation_data/complete_sim.txt.clean
+	Max: 10.155290
+	Min: -10.930655
+	Mean value: -0.037322
+	Total number of values: 2025000
+	Storage size as is: 8100000 bytes
+		*****RUNLENGTH STATS *****
+		Number of indexes in runlength array 2024999, a net reduction in 1 indexes
+		Size in bytes of runlength array 16199992 bytes
+			*****ZFP STATS *****
+			Size after zfp compression 5687152 bytes
+*****STATS*****
+	For file: /home/crags/Documents/compressor-repo/data/simulation_data/one_third_sim.txt.clean
+	Max: 13.074379
+	Min: -16.119495
+	Mean value: -0.039107
+	Total number of values: 2024863
+	Storage size as is: 8099452 bytes
+		*****RUNLENGTH STATS *****
+		Number of indexes in runlength array 2024857, a net reduction in 6 indexes
+		Size in bytes of runlength array 16198856 bytes
+			*****ZFP STATS *****
+			Size after zfp compression 5507432 bytes
+Global stats..
+Largest value found across files: 14.523329. Smallest value found: -16.119495
