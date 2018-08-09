@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 float globalMax = -10000.0f;
 float globalMin = 10000.0f;
@@ -72,7 +73,7 @@ void transform(float *content) {
 	for(i = 0; i < 150; i++) {
 		for(j = 0; j < 150; j++) {
 			for(k = 0; k < 50; k++) {
-				updateValue(i,j,k,&content);
+				updateValue(i,j,k,content);
 			}
 		}
 	}	
@@ -141,11 +142,28 @@ void displayStats(char *filePath) {
 		i++;
 	}
 	fclose(contentFile);
-	printf("Starting transformation!");
-	clock_t time = clock();
-	transform(content);
-	time = clock() - time;
-	printf("Time taken: %f seconds\n", ((double)time)/CLOCKS_PER_SEC);
+//	printf("Starting transformation!");
+//	clock_t time = clock();
+	float value = content[0];
+	printf("Before rounding:%f ", value);
+	value = floor(10000*value)/10000;
+
+
+
+
+	printf("After rounding:%f ", value);
+	//printf("%X\n", &value);
+	float fraction, intpart;
+
+	fraction = modff(value, &intpart);
+	printf("Int part:%f fraction:%f\n", intpart, fraction);
+
+
+
+
+	//transform(content);
+//	time = clock() - time;
+//	printf("Time taken: %f seconds\n", ((double)time)/CLOCKS_PER_SEC);
 	free(content);
 }
 
@@ -166,30 +184,6 @@ int main(int argc, char *argv[]) {
 	for(i = 0; i < 6; i++) {
 		printf("%d : %s\n", i+1, files[i]);
 	}
-	
-
-
-	//printf("Getting stats for files..\n");
-	//Get each files stats
-	//for(i = 0; i < 6; i++) {
 	displayStats(files[0]);
-	//}
-
-	//printf("Global stats..\n");
-	//printf("Largest value found across files: %f. Smallest value found: %f\n", globalMax, globalMin);
-
-	//struct dirent *directoryEntry;
-	//DIR *directory = opendir(argv[1]);
-
-	//if(directory == NULL) {
-//		printf("ERROR");
-//		return -1;
-//	}
-	
-	//read entries
-//	while((directoryEntry = readdir(directory)) != NULL) {
-//		printf("%s\n", directoryEntry->d_name);
-//	}
-//	closedir(directory);
 	return 0;
 }
