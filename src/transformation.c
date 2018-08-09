@@ -2,7 +2,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdlib.h>
-//#include "zfp_example.h"
+#include <time.h>
 
 float globalMax = -10000.0f;
 float globalMin = 10000.0f;
@@ -18,6 +18,64 @@ struct rlEntry {
  */
 inline unsigned int F3D2C(unsigned int i_rng, unsigned int j_rng, int i_lb, int j_lb, int k_lb, int ix, int jx, int kx) {
 	return (i_rng*j_rng*(kx-k_lb)+i_rng*(jx-j_lb)+ix+i_lb);
+}
+
+//Return index of the value or -1 if its invalid
+int getIndex(int i, int j, int k) {
+	if(i == 0 || i == 250 || j == 0 || j == 250 || k == 0 || k == 50)
+		return -1;
+	else
+		return F3D2C(150, 150, 0, 0, 0, i, j, k);
+}
+
+//given an i,j,k index update the value based on whats around it
+float updateValue(int i, int j, int k, float* values) {
+	float tmp = 0.0f;
+	int divisor = 0;
+	float current = values[F3D2C(150,150,0,0,0,i,j,k)];
+
+	if(getIndex(i-1,j,k)!=-1) {
+		tmp+=values[F3D2C(150,150,0,0,0,i-1,j,k)];
+		divisor++;
+	}
+	if(getIndex(i+1,j,k)!=-1){
+		tmp+=values[F3D2C(150,150,0,0,0,i+1,j,k)];
+		divisor++;
+	}
+	if(getIndex(i,j-1,k) != -1){
+		tmp+=values[F3D2C(150,150,0,0,0,i,j-1,k)];
+		divisor++;
+	}
+	if(getIndex(i,j+1,k)!=-1){
+		tmp+=values[F3D2C(150,150,0,0,0,i,j+1,k)];
+		divisor++;
+	}
+	if(getIndex(i,j,k-1)!=-1){
+		tmp+=values[F3D2C(150,150,0,0,0,i,j,k-1)];
+		divisor++;
+	}
+	if(getIndex(i,j,k+1)!=-1){
+		tmp+=values[F3D2C(150,150,0,0,0,i,j,k+1)];
+		divisor++;
+	}
+	values[F3D2C(150,150,0,0,0,i,j,k)]=current+(tmp/divisor);
+}
+
+
+void transform(float *content) {
+	int i = 0;
+	int j = 0;
+	int k = 0;
+
+	int count = 0;
+	float total = 0.0f;
+	for(i = 0; i < 150; i++) {
+		for(j = 0; j < 150; j++) {
+			for(k = 0; k < 50; k++) {
+				updateValue(i,j,k,&content);
+			}
+		}
+	}	
 }
 
 //assumes 0'd out files array
@@ -83,18 +141,15 @@ void displayStats(char *filePath) {
 		i++;
 	}
 	fclose(contentFile);
-	
+	printf("Starting transformation!");
+	clock_t time = clock();
 	transform(content);
+	time = clock() - time;
+	printf("Time taken: %f seconds\n", ((double)time)/CLOCKS_PER_SEC);
 	free(content);
 }
 
-void transform(float *content) {
-	
-	//for each index
-	//calc if on boundary
-	//update value
-	//
-}
+
 
 int main(int argc, char *argv[]) {
 	if(argc < 2) {
