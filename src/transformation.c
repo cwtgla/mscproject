@@ -5,12 +5,8 @@
 #include <time.h>
 #include <math.h>
 
-float globalMax = -10000.0f;
-float globalMin = 10000.0f;
-
-struct rlEntry {
-	float value;
-	uint count;
+struct compressedVal {
+	char data[3];
 };
 
 /* convert from i,j,k notation for a 3D array to a flat index
@@ -100,74 +96,63 @@ void getAbsFilenames(char *basedir, char *files[], char *extension) {
 	}
 }
 
-void runlengthStats(float *values, int count) {
-	struct rlEntry *entries = calloc(count, sizeof(struct rlEntry));
-	entries[0].count = 1;
-	entries[0].value = values[0];
-
-	int i;
-	int entryIndex = 0;
-	for(i = 1; i < count; i++) {
-		if(entries[entryIndex].value == values[i]) {
-			entries[entryIndex].count++;
-		} else {
-			entryIndex++;
-			entries[entryIndex].value = values[i];
-			entries[entryIndex].count = 1;
-		}
-	}
-
-	free(entries);
-	printf("\t\t*****RUNLENGTH STATS *****\n");
-	printf("\t\tNumber of indexes in runlength array %d, a net reduction in %d indexes\n\t\tSize in bytes of runlength array %lu bytes\n", entryIndex, count-entryIndex, sizeof(struct rlEntry)*entryIndex);
-}
-
-//Print stats from using zfp to compress values
-void zfpStats(float *values, int count) {
-	printf("\t\t\t*****ZFP STATS *****\n");
-	size_t compressedSize;
-//	compressedSize = compress(values, 150, 150, 90, 0.00, 0);
-	printf("\t\t\tSize after zfp compression %lu bytes\n", compressedSize);
-}
-
 //Get basic file stats (max,min,mean and number of values)
 void displayStats(char *filePath) {
 	FILE *contentFile;
+//	printf("After rounding:%f ", value);
+	//printf("%X\n", &value);
+	float fraction, intpart;
 
-	contentFile = fopen(filePath, "r");
+//	fraction = modff(value, &intpart);
+//	printf("Int part:%f fraction:%f\n", intpart, fraction);
+//	int firstPart = (int)intpart;
+//	int secondPart  = (int)(fraction*10000);
+//	printf("To store, before DP %d, after DP %d\n", firstPart, secondPart);
+//
+//	struct compressedVal value1;
+//	memcpy(value1.data,0);
+//	printf("\n size %ld\n", sizeof(value1.data));
+
+//transform(content);
+//	time = clock() - time;
+//	//	printf("Time taken: %f seconds\n", ((double)time)/CLOCKS_PER_SEC);
+//	free(content);
+}
+
+float* getData(char *filePath) {
+	FILE *contentFile = fopen(filePath, "r");
 	float *content = calloc(150*150*90, sizeof(float));
 	int i = 0;
-
 	while(fscanf(contentFile, "%f", &content[i]) == 1) {
 		i++;
 	}
 	fclose(contentFile);
-//	printf("Starting transformation!");
-//	clock_t time = clock();
-	float value = content[0];
-	printf("Before rounding:%f ", value);
-	value = floor(10000*value)/10000;
-
-
-
-
-	printf("After rounding:%f ", value);
-	//printf("%X\n", &value);
-	float fraction, intpart;
-
-	fraction = modff(value, &intpart);
-	printf("Int part:%f fraction:%f\n", intpart, fraction);
-
-
-
-
-	//transform(content);
-//	time = clock() - time;
-//	printf("Time taken: %f seconds\n", ((double)time)/CLOCKS_PER_SEC);
-	free(content);
+	return content;
 }
 
+void getCompressedData(char *filePath, unsigned int magBits, unsigned int precBits) {
+	float *data = getData(filePath);
+	char sign = data[0] > 0 ? 1 : 0;
+	float afterDecimal, beforeDecimal;
+	afterDecimal = modff(data[0], &beforeDecimal);
+	int firstPart = (int) beforeDecimal;
+	int secondPart = (int) (afterDecimal*10000);
+	printf("Looking to store %f -> %d %d\n", data[0], firstPart, secondPart);
+	
+	struct compressedVal value1;
+	memset(&value1.data, 0, sizeof(char)*3);	
+	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
+	
+	value1.data[0] = sign << 7; //sign always gets shifted 7
+	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
+	value1.data[0] = value1.data[0] | (firstPart << (7-magBits)); //this gets shifted 7-mag bits
+	
+	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
+	
 
+
+	free(data);
+}
 
 int main(int argc, char *argv[]) {
 	if(argc < 2) {
@@ -184,6 +169,6 @@ int main(int argc, char *argv[]) {
 	for(i = 0; i < 6; i++) {
 		printf("%d : %s\n", i+1, files[i]);
 	}
-	displayStats(files[0]);
+	getCompressedData(files[0], 5, 18);
 	return 0;
 }
