@@ -142,9 +142,16 @@ void getCompressedData(char *filePath, unsigned int magBits, unsigned int precBi
 	struct compressedVal value1;
 	memset(&value1.data, 0, sizeof(char)*3);	
 	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
-	
+	//can do and with highest value or or with old?
+
+	//shift in sign
 	value1.data[0] = sign << 7; //sign always gets shifted 7
 	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
+	
+	//shift in magnitude
+	//take magnitude currently in int
+	//cast to void
+	//cast to chars, shift the existing char into what i want
 	value1.data[0] = value1.data[0] | (firstPart << (7-magBits)); //this gets shifted 7-mag bits
 	
 	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
@@ -169,6 +176,7 @@ int main(int argc, char *argv[]) {
 	for(i = 0; i < 6; i++) {
 		printf("%d : %s\n", i+1, files[i]);
 	}
+	//get compressed data array with 5 bits for magnitude and 18 for precision
 	getCompressedData(files[0], 5, 18);
 	return 0;
 }
