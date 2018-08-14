@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <stdint.h>
 
 struct compressedVal {
 	char data[3];
@@ -135,8 +136,8 @@ void getCompressedData(char *filePath, unsigned int magBits, unsigned int precBi
 	char sign = data[0] > 0 ? 1 : 0;
 	float afterDecimal, beforeDecimal;
 	afterDecimal = modff(data[0], &beforeDecimal);
-	int firstPart = (int) beforeDecimal;
-	int secondPart = (int) (afterDecimal*10000);
+	uint32_t firstPart = (uint32_t) beforeDecimal;
+	uint32_t secondPart = (uint32_t) (afterDecimal*10000);
 	printf("Looking to store %f -> %d %d\n", data[0], firstPart, secondPart);
 	
 	struct compressedVal value1;
@@ -144,10 +145,14 @@ void getCompressedData(char *filePath, unsigned int magBits, unsigned int precBi
 	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
 	//can do and with highest value or or with old?
 
-	//shift in sign
-	value1.data[0] = sign << 7; //sign always gets shifted 7
+	value1.data[0] = sign << 7; //sign always gets shifted up 7 places in the first byte
 	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
-	
+
+	if(magBites+1 <=8) {
+
+		value1.data[0] = value1.data[0] | (firstPart << (7-magBits)); //
+	}
+
 	//shift in magnitude
 	//take magnitude currently in int
 	//cast to void
