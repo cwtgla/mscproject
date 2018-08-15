@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 struct compressedVal {
-	char data[3];
+	unsigned char data[3];
 };
 
 /* convert from i,j,k notation for a 3D array to a flat index
@@ -132,94 +132,38 @@ float* getData(char *filePath, int *dataLength) {
 	return content;
 }
 
-void getCompressedData(char *filePath, unsigned int magBits, unsigned int precBits) {
+struct compressedVal* getCompressedData(char *filePath, unsigned int magBits, unsigned int precBits) {
 	int dataLength;
-	float *uncompressedData = getData(filepath, &dataLength);
+	float *uncompressedData = getData(filePath, &dataLength);
 	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal));
 	char sign;
 	float firstPart, secondPart;
 	uint32_t beforeDecimal, afterDecimal;
 	int i;
 	int offset;
-	
+	void *temp;
+	char *bytes;
+
 	for(i = 0; i < dataLength; i++) {
-		sign = uncompressedData[i]>0?1:0;
-		secondPart = modff(uncompresedData[i], &firstPath);
+		sign = uncompressedData[i]>0?0:1;
+		secondPart = modff(uncompressedData[i], &firstPart);
 		beforeDecimal = (uint32_t) firstPart;
 		afterDecimal = (uint32_t) (secondPart*10000);
 		compressedData[i].data[0] = sign << 7;
-		compressedData[i].data[0] = beforeDecimal << 2 | compressedData[i].data[0];
-		compressedData[i].data[0] = afterDecimal >> 16 | compressedData[i].data[0];
-		
+		temp = &beforeDecimal;
+		bytes = (char *) (temp);
+		printf("asd %d %d\n", bytes[2], bytes[2] << 2);
+		compressedData[i].data[0] = compressedData[i].data[0] | bytes[0] << 2;
+		temp = &afterDecimal;
+		bytes = (char *) (temp);
+		compressedData[i].data[0] = compressedData[i].data[0] | bytes[3]; 
+		compressedData[i].data[1] = bytes[1];
+		compressedData[i].data[2] = bytes[0];
+		printf("start %d %d\n", beforeDecimal, afterDecimal);
+		printf("after %d:%d:%d\n\n", compressedData[i].data[0], compressedData[i].data[1], compressedData[i].data[2]);
 	}
-	
-	
-	
-	
-	
-	
-	//If the fixed data size fits in a whole number of bytes
-	if((1+magBits+precBits) % 8 == 0) {
-		for(i=0;i<dataLength;i++) {
-			offset=0;
-			sign=uncompressedData[i]>0?1:0;
-			secondPart = modff(uncompressedData[i], &firstPart);
-			beforeDecimal = (uint32_t) firstPart;
-			afterDecimal = (uint32_t) (secondHalf*10000); //TODO fix this based on precbits
-			compressedData[i].data[0] = sign << 7; //Shifting sign in
-
-			//If magnitude+sign fit in the first byte
-			if(1+magBits <=8) {
-				compressedData[i].data[0] = compressedData[i].data[0] | ((beforeDecimal >> (32 - (7-magBits))) & 0xFF);
-				offset = 7-magBits;
-			} else { //Magnitude overflows into another byte
-				compressedData[i].data[0] = compressedData[i].data[0] | 
-			}
-		}
-		//put in sign
-
-		//
-		//deal with magnitude
-	} else {
-
-	}
-
-
-		compressedData[i].data[0] = sign << 7;
-
-		//If magnitude and sign fit in the first byte
-		if(magBits+1 <= 8) {
-			compressedData[i].data[0] = compressedData[i].data[0] | (firstInt << (7-magBits));
-			//If there's no space left in the byte
-			if(magBits+1 == 8) {
-				printf("unexpected case\n");
-			} else {
-				compressedData[i].data[0] = (secondInt >> (32-magBits)) & 0xFF;
-			}
-
-		} else {
-			printf("unexpected case\n");
-		}
-	//	uncompressedVal[i].data = 
-	}	
-	
-	
-	//if(magBits+1 <=8) {
-//
-//		value1.data[0] = value1.data[0] | (firstPart << (7-magBits)); //
-//	}
-
-	//shift in magnitude
-	//take magnitude currently in int
-	//cast to void
-	//cast to chars, shift the existing char into what i want
-//	value1.data[0] = value1.data[0] | (firstPart << (7-magBits)); //this gets shifted 7-mag bits
-	
-//	printf("content %d %d %d\n", value1.data[0], value1.data[1], value1.data[2]);
-	
-
-
-	free(compressedData);
+	free(uncompressedData);
+	return compressedData;
 }
 
 int main(int argc, char *argv[]) {
