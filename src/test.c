@@ -16,15 +16,27 @@ int main() {
 //	printf("%s\n", initialValue);
 
 
-	unsigned char bytes[4];
-	uint32_t intv = 1235678887;
+//	unsigned char bytes[4];
+//	uint32_t intv = 1235678887;
 
-	bytes[0] = (intv >> 24) & 0xFF;
-	bytes[1] = (intv >> 16) & 0xFF;
-	bytes[2] = (intv >> 8) & 0xFF;
-	bytes[3] = intv & 0xFF;
+//	bytes[0]// = (intv >> 24) & 0xFF;
+//	bytes[//1] = (intv >> 16) & 0xFF;
+//	byte//s[2] = (intv >> 8) & 0xFF;
+//	by//tes[3] = intv & 0xFF;
 
-	printf("%x %x %x %x\n", (unsigned char)bytes[0],(unsigned char) bytes[1],(unsigned char) bytes[2],(unsigned char) bytes[3]);
+	//printf("%x %x %x %x\n", (unsigned char)bytes[0],(unsigned char) bytes[1],(unsigned char) bytes[2],(unsigned char) bytes[3]);
+
+	uint32_t a = 1294;
+	unsigned char b[4];
+	char *c;
+
+	void *ptr = &a;
+	char *ptr2 = (char) *a;
+	//void *ptr = &a;
+	
+
+	//*c = (unsigned char) a;
+
 
 	return 0;
 }
