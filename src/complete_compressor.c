@@ -38,7 +38,8 @@ void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtensio
 }
 
 
-/* Purpose:
+/* 
+ *	Purpose:
  *		Using runlength compression, get a compressed version of a given dataset of floats
  * Returns:
  * 		list of rlEntrys that represent a runlength compressed version of *values
@@ -47,13 +48,13 @@ void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtensio
  * 		2. *count - a count of the number of values in the given data
  * 		3. *newCount - a count of the number of entries in the runlength compressed data
  */
-struct runlengthEntry *runLengthCompression(float *values, int count, int *newCount) {
+struct runlengthEntry *runlengthCompression(float *values, int count, int *newCount) {
 	struct runlengthEntry *compressedData = calloc(count, sizeof(struct runlengthEntry));
 	compressedData[0].value = values[0];
 	compressedData[0].valuecount = 1;
+	int uci, ci = 0; //ci = compressed ds index, uci = uncompressed ds index
 
-	int ci, uci = 0; //ci = compressed ds index, uci = uncompressed ds index
-	for(uci=0; uci < count; uci++) {
+	for(uci=1; uci < count; uci++) {
 		if(compressedData[ci].value == values[uci]) { //if value is continued
 			compressedData[ci].valuecount++;
 		} else {
@@ -62,6 +63,7 @@ struct runlengthEntry *runLengthCompression(float *values, int count, int *newCo
 			compressedData[ci].valuecount = 1;
 		}
 	}
+	*newCount = ci;
 	return compressedData;
 }
 
@@ -108,13 +110,23 @@ int main(int argc, char *argv[]) {
 		printf("%d %s\n", i, filePaths[i]);
 	}
 	
-	int dataSize = 0;
+	///get uncompressed data
+	int uncompressedSize = 0;
 	printf("passing %s\n", filePaths[0]);
-	float *data = getData(filePaths[0], &dataSize);
-	for(i = 0; i < 100; i++) {
-		printf("%d %.8f\n", i, data[i]);
+	float *uncompressedData = getData(filePaths[0], &uncompressedSize);
+	//for(i = 0; i < uncompressedSize; i++) {
+	//	printf("%d %.8f\n", i, uncompressedData[i]);
+	//}
+
+
+	int compressedSize;
+	//printf("%d", uncompressedSize);
+	struct runlengthEntry *compressedData = runlengthCompression(uncompressedData, uncompressedSize, &compressedSize);
+	for(i=0; i<compressedSize;i++) {
+		printf("index: %d value: %f count: %d\n", i, compressedData[i].value, compressedData[i].valuecount);
+		//if(compressedData[i].valuecount > 1) {
+		//	printf("index: %d value: %f count: %d\n", i, compressedData[i].value, compressedData[i].valuecount);
+		//}
 	}
-	//struct runlengthEntry *compressed = runlengthCompression(	
-	
 
 }
