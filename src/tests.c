@@ -15,18 +15,23 @@ int tests_run = 0;
  *
  */
 static char *testGetAbsoluteFilepaths() {
-	char *directory = "/home/crags/Documents/compressor-repo/data/test_datasets/";
+	char *directory = "/home/crags/Documents/compressor-repo/data/test_datasets/getdata/";
 	char *files[100];
 	int fileCount;
 
 	getAbsoluteFilepaths(files, directory, ".txt", &fileCount);
-	mu_assert("ERROR in testGetAbsoluteFilepaths: incorrect number of files found", fileCount == 3);
+	mu_assert("ERROR in testGetAbsoluteFilepaths: incorrect number of files found", fileCount == 2);
 	return 0;
 }
 
+/*
+ * Purpose:
+ * 		Test to confirm that getData() is returning the expected amount of data and no lines are missed.
+ *
+ */
 static char *testGetData() {
-	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/100lines.txt";
-	char *file2 = "/home/crags/Documents/compressor-repo/data/test_datasets/0lines.txt";
+	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/getdata/100lines.txt";
+	char *file2 = "/home/crags/Documents/compressor-repo/data/test_datasets/getdata/0lines.txt";
 	int lineCount1 = 0;
 	int lineCount2 = 0;
 
@@ -41,14 +46,45 @@ static char *testGetData() {
 }
 
 static char *testRunlengthCompression() {
-	
+	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/runlength/runlength_0_compression.txt";
+	int uncompressedCount = 0;
+	float *uncompressedData = getData(file1, &uncompressedCount);
+	int compressedCount = 0;
+	struct runlengthEntry *compressedData = runlengthCompression(uncompressedData, uncompressedCount, &compressedCount);
+	mu_assert("ERROR in testRunlengthCompression: 0 compression example isn't working as expected", uncompressedCount == compressedCount);
+	free(uncompressedData);
+	free(compressedData);
+
+	//code to test that runlength works as well as expected
+	char *file2 = "/home/crags/Documents/compressor-repo/data/test_datasets/runlength/runlength_50_compression.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(file2, &uncompressedCount);
+	compressedCount = 0;
+	compressedData = runlengthCompression(uncompressedData, uncompressedCount, &compressedCount);
+	mu_assert("Error in testRunlengthCompression: 50% compression example isn't working as expected", compressedCount == (uncompressedCount/2));
+	free(uncompressedData);
+	free(compressedData);
+
+	char *file3 = "/home/crags/Documents/compressor-repo/data/test_datasets/runlength/runlength_100_compression.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(file3, &uncompressedCount);
+	compressedCount = 0;
+	compressedData = runlengthCompression(uncompressedData, uncompressedCount, &compressedCount);
+	mu_assert("Error in testRunlengthCompression: 100% compression example isn't working as expected", compressedCount == 1);
+	free(uncompressedData);
+	free(compressedData);
+
+	return 0;
 }
 
+static char *testRunlengthDecompression() {
 
+}
  
 static char * all_tests() {
 	mu_run_test(testGetAbsoluteFilepaths);
 	mu_run_test(testGetData);
+	mu_run_test(testRunlengthCompression);
 
 	return 0;
 }
