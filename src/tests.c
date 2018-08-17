@@ -3,45 +3,53 @@
 //Tests for compression
  
 #include <stdio.h>
+#include <stdlib.h>
 #include "minunit.h"
 #include "complete_compressor.h"
 
 int tests_run = 0;
  
-int foo = 7;
-int bar = 4;
-
-static char *test_read_data_correct_count() {
- 	char *testDirName = "/home/crags/Documents/compressor-repo/data/test_datasets/";
-	char *testFileName = "ds1.txt";
-
-}
-
+/*
+ * Purpose:
+ * 		Test to confirm that getAbsoluteFilepaths() works as expected (produces correct number of files)
+ *
+ */
 static char *testGetAbsoluteFilepaths() {
 	char *directory = "/home/crags/Documents/compressor-repo/data/test_datasets/";
 	char *files[100];
 	int fileCount;
 
-	getAbsoluteFilepaths(files, directory, ".txt.", &fileCount);
-	mu_assert("ERROR in testGetAbsoluteFilepaths: incorrect number of files found", fileCount == 0);
+	getAbsoluteFilepaths(files, directory, ".txt", &fileCount);
+	mu_assert("ERROR in testGetAbsoluteFilepaths: incorrect number of files found", fileCount == 3);
 	return 0;
 }
 
-static char * test_foo() {
-	mu_assert("error, foo != 7", foo == 7);
+static char *testGetData() {
+	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/100lines.txt";
+	char *file2 = "/home/crags/Documents/compressor-repo/data/test_datasets/0lines.txt";
+	int lineCount1 = 0;
+	int lineCount2 = 0;
+
+	float *contents1 = getData(file1, &lineCount1);
+	mu_assert("ERROR in testGetData: expected number of entries hasn't been retrieved (100)", lineCount1 == 100);
+	float *contents2 = getData(file2, &lineCount2);
+	mu_assert("ERROR in testGetData: expected number of entries hasn't been retrieved (0)", lineCount2 == 0);
+	free(contents1);
+	free(contents2);
+
 	return 0;
 }
- 
-static char * test_bar() {
-	mu_assert("error, bar != 5", bar == 5);
-	return 0;
+
+static char *testRunlengthCompression() {
+	
 }
+
+
  
 static char * all_tests() {
-     //mu_run_test(test_foo);
-     //mu_run_test(test_bar);
+	mu_run_test(testGetAbsoluteFilepaths);
+	mu_run_test(testGetData);
 
-	testGetAbsoluteFilepaths();
 	return 0;
 }
  
