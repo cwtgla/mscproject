@@ -2,19 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <math.h>
 
-struct runlengthEntry {
+struct runlengthEntry { //struct to represent a runlength entry of value and number of times its repeated
 	float value;
-	uint valuecount;
+	uint32_t valuecount;
+};
+
+struct compressedVal { //struct to represent a multiple*8 bit compressed value
+	unsigned char *data;
 };
 
 /* 
- * Purpose:
+ * Purpose:  
  * 		Get a list of the absolute filepaths of a certain type of file within a directory
  * Parameters: 
- * 		1. *files[] - a blank char array to hold the absolute file paths desired
- * 		2. *baseDirectory - the absolute path of the base directory that the target files are in
- * 		3. *fileExtension - the filename extension of the targeted files in the base directory
+ * 		1. files[] - a blank char array to hold the absolute file paths desired
+ * 		2. baseDirectory - the absolute path of the base directory that the target files are in
+ * 		3. fileExtension - the filename extension of the targeted files in the base directory
  */
 void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtension, int *count) {
 	struct dirent *directoryEntry;
@@ -43,13 +48,11 @@ void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtensio
  * Returns:
  * 		List of floats represented the uncompressed version of the given data
  * Parameters:
- * 		1. *compressedValues - a list of runlength compress runlengthEntry structs
- * 		2. *count - a count of the number of (unique) values in the runlength compressed data
- * 		3. *newCount - a count of the number of entries in the decompressed data
- *
- *
+ * 		1. compressedValues - a list of runlength compress runlengthEntry structs
+ * 		2. count - a count of the number of (unique) values in the runlength compressed data
+ * 		3. newCount - a count of the number of entries in the decompressed data
  */
-float* runlengthDecompression(struct runlengthEntry *compressedValues, int count, int *newCount) {
+float *runlengthDecompression(struct runlengthEntry *compressedValues, int count, int *newCount) {
 	int i;
 	unsigned int totalCount = 0;
 
@@ -66,6 +69,7 @@ float* runlengthDecompression(struct runlengthEntry *compressedValues, int count
 			compressedValues[i].valuecount--;
 		}
 	}
+	*newCount = newPos;
 	return uncompressedValues;
 }
 
@@ -75,9 +79,9 @@ float* runlengthDecompression(struct runlengthEntry *compressedValues, int count
  * Returns:
  * 		list of rlEntrys that represent a runlength compressed version of *values
  * Parameters:
- * 		1. *values - list of float values that are to be compressed
- * 		2. *count - a count of the number of values in the given data
- * 		3. *newCount - a count of the number of entries in the runlength compressed data
+ * 		1. values - list of float values that are to be compressed
+ * 		2. count - a count of the number of values in the given data
+ * 		3. newCount - a count of the number of entries in the runlength compressed data
  */
 struct runlengthEntry *runlengthCompression(float *values, int count, int *newCount) {
 	struct runlengthEntry *compressedData = calloc(count, sizeof(struct runlengthEntry));
@@ -105,9 +109,8 @@ struct runlengthEntry *runlengthCompression(float *values, int count, int *newCo
  * Returns:
  * 		list of floats representing data in the file
  * Parameters:
- * 		1. *absFilePath - absolute file path of the file that data will be extracted from
- * 		2. *dataLength - passed in to get the number of values/indexes of the data
- *
+ * 		1. absFilePath - absolute file path of the file that data will be extracted from
+ * 		2. dataLength - passed in to get the number of values/indexes of the data
  */
 float *getData(char *absFilePath, int *dataLength) {
 	FILE *contentFile = fopen(absFilePath, "r");
@@ -125,3 +128,47 @@ float *getData(char *absFilePath, int *dataLength) {
 	return exactContent;
 }
 
+/*
+ * Purpose:
+ * 		Compress the given data into a 24 bit format using the given parameters to cut down the original data
+ * Returns:
+ * 		List of 24 bit values representing the original 32bit data
+ * Parameters:
+ * 		1. absFilePath - absolute file path of the file that data will be extracted from
+ * 		2. magBits - number of bits to be used for the magnitude of the data (before decimal place)
+ *		3. precBits - number of bits to be used for the precision of the data (after decimal place)
+ */
+struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int magBits, unsigned int precBits) {
+	int dataLength = 0;
+	float *uncompressedData = getData(absFilePath, &dataLength);
+	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal));
+	char sign;
+	float firstPart, secondPart;
+	uint32_t beforeDecimal, afterDecimal;
+	int i;
+	int offset;
+	void *temp;
+	char *bytes;
+
+	for(i = 0; i < dataLength; i++) {
+		compressedData[i].data = malloc(3 * sizeof(char));
+		sign = uncompressedData[i]>0?0:1;
+		secondPart = modff(uncompressedData[i], &firstPart);
+		beforeDecimal = (uint32_t) firstPart;
+		afterDecimal = (uint32_t) (secondPart*10000);
+		compressedData[i].data[0] = sign << 7;
+		temp = &beforeDecimal;
+		bytes = (char *) (temp);
+		printf("asd %d %d\n", bytes[2], bytes[2] << 2);
+		compressedData[i].data[0] = compressedData[i].data[0] | bytes[0] << 2;
+		temp = &afterDecimal;
+		bytes = (char *) (temp);
+		compressedData[i].data[0] = compressedData[i].data[0] | bytes[3]; 
+		compressedData[i].data[1] = bytes[1];
+		compressedData[i].data[2] = bytes[0];
+		printf("start %d %d\n", beforeDecimal, afterDecimal);
+		printf("after %d:%d:%d\n\n", compressedData[i].data[0], compressedData[i].data[1], compressedData[i].data[2]);
+	}
+	free(uncompressedData);
+	return compressedData;
+}
