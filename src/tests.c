@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "minunit.h"
 #include "complete_compressor.h"
+#include <math.h>
 
 int tests_run = 0;
 //char *homedir = getenv("HOME");
@@ -15,7 +16,7 @@ int tests_run = 0;
  * 		Test to confirm that getAbsoluteFilepaths() works as expected (produces correct number of files)
  */
 static char *testGetAbsoluteFilepaths() {
-	char *directory = "/Users/Craig/Documents/compressor-repo/data/test_datasets/getdata/";
+	char *directory = "/home/crags/Documents/compressor-repo/data/test_datasets/getdata/";
 	char *files[100];
 	int fileCount;
 
@@ -29,8 +30,8 @@ static char *testGetAbsoluteFilepaths() {
  * 		Test to confirm that getData() is returning the expected amount of data and no lines are missed
  */
 static char *testGetData() {
-	char *file1 = "/Users/Craig/Documents/compressor-repo/data/test_datasets/getdata/100lines.txt";
-	char *file2 = "/Users/Craig/Documents/compressor-repo/data/test_datasets/getdata/0lines.txt";
+	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/getdata/100lines.txt";
+	char *file2 = "/home/crags/Documents/compressor-repo/data/test_datasets/getdata/0lines.txt";
 	int lineCount1 = 0;
 	int lineCount2 = 0;
 
@@ -50,17 +51,18 @@ static char *testGetData() {
  */
 static char *testRunlengthCompression() {
 	//dataset for a situation where there's no improvement in compression
-	char *file1 = "/Users/Craig/Documents/compressor-repo/data/test_datasets/runlength/runlength_0_compression.txt";
+	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/runlength/runlength_0_compression.txt";
 	int uncompressedCount = 0;
 	float *uncompressedData = getData(file1, &uncompressedCount);
 	int compressedCount = 0;
 	struct runlengthEntry *compressedData = runlengthCompression(uncompressedData, uncompressedCount, &compressedCount);
+	printf("%d %d\n", uncompressedCount,compressedCount);
 	mu_assert("ERROR in testRunlengthCompression: 0 compression example isn't working as expected", uncompressedCount == compressedCount);
 	free(uncompressedData);
 	free(compressedData);
 
 	//dataset for a situation where the number of data entries can be halved
-	char *file2 = "/Users/Craig/Documents/compressor-repo/data/test_datasets/runlength/runlength_50_compression.txt";
+	char *file2 = "/home/crags/Documents/compressor-repo/data/test_datasets/runlength/runlength_50_compression.txt";
 	uncompressedCount = 0;
 	uncompressedData = getData(file2, &uncompressedCount);
 	compressedCount = 0;
@@ -70,7 +72,7 @@ static char *testRunlengthCompression() {
 	free(compressedData);
 
 	//dataset for a situation where there's all data can be compressed into 1 entry
-	char *file3 = "/Users/Craig/Documents/compressor-repo/data/test_datasets/runlength/runlength_100_compression.txt";
+	char *file3 = "/home/crags/Documents/compressor-repo/data/test_datasets/runlength/runlength_100_compression.txt";
 	uncompressedCount = 0;
 	uncompressedData = getData(file3, &uncompressedCount);
 	compressedCount = 0;
@@ -88,14 +90,15 @@ static char *testRunlengthCompression() {
  */
 static char *testRunlengthDecompression() {
 	//dataset for a situation where there's all data can be compressed into 1 entry
-	char *file1 = "/Users/Craig/Documents/compressor-repo/data/test_datasets/runlength/runlength_100_compression.txt";
+	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/runlength/runlength_100_compression.txt";
 	int uncompressedCount = 0;
 	float *uncompressedData = getData(file1, &uncompressedCount);
 	int compressedCount = 0;
 	struct runlengthEntry *compressedData = runlengthCompression(uncompressedData, uncompressedCount, &compressedCount);
 	int decompressedCount = 0;
 	float *decompressedData = runlengthDecompression(compressedData, compressedCount, &decompressedCount);
-	mu_assert("Error in testRunlengthDecompression: before compression and decompressed size arent the same", uncompressedCount == decompressedCount);
+	printf("%d %d \n", uncompressedCount, decompressedCount);
+	mu_assert("Error in testRunlengthDecompression: before compression and decompressed size arent the same (100%)", uncompressedCount == decompressedCount);
 	int i;
 	for(i = 0; i < decompressedCount; i++) {
 		mu_assert("Error in testRunlengthDecompression: before and after elements mismatch", uncompressedData[i]==decompressedData[i]);
@@ -104,14 +107,14 @@ static char *testRunlengthDecompression() {
 	free(compressedData);
 
 	//dataset for a situation where there's all data can be compressed into 1 entry
-	char *file2 = "/Users/Craig/Documents/compressor-repo/data/test_datasets/runlength/runlength_50_compression.txt";
+	char *file2 = "/home/crags/Documents/compressor-repo/data/test_datasets/runlength/runlength_50_compression.txt";
 	uncompressedCount = 0;
 	uncompressedData = getData(file2, &uncompressedCount);
 	compressedCount = 0;
 	compressedData = runlengthCompression(uncompressedData, uncompressedCount, &compressedCount);
 	decompressedCount = 0;
 	decompressedData = runlengthDecompression(compressedData, compressedCount, &decompressedCount);
-	mu_assert("Error in testRunlengthDecompression: before compression and decompressed size arent the same", uncompressedCount == decompressedCount);
+	mu_assert("Error in testRunlengthDecompression: before compression and decompressed size arent the same (50%)", uncompressedCount == decompressedCount);
 
 	for(i = 0; i < decompressedCount; i++) {
 		mu_assert("Error in testRunlengthDecompression: before and after elements mismatch", uncompressedData[i]==decompressedData[i]);
@@ -122,19 +125,23 @@ static char *testRunlengthDecompression() {
 	return 0;
 }
 
+/*
+ * Purpose:
+ *		Test that the fixed 24 bit compression compresses and decompresses as expected
+ */
 static char *test24BitRateCompression() {
-	char *file1 = "/Users/Craig/Documents/compressor-repo/data/test_datasets/24bit/10lines_5mag_18prec.txt";
+	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/24bit/5lines_5mag_18prec.txt";
 	int uncompressedCount = 0;
 	float *uncompressedData = getData(file1, &uncompressedCount);
-	//float *compressedData = get24BitCompressedData
+	struct compressedVal *compressedData = get24BitCompressedData(file1, 5, 18);
 	return 0;
 }
  
 static char *all_tests() {
-	mu_run_test(testGetAbsoluteFilepaths);
-	mu_run_test(testGetData);
-	mu_run_test(testRunlengthCompression);
-	mu_run_test(testRunlengthDecompression);
+	//mu_run_test(testGetAbsoluteFilepaths);
+	//mu_run_test(testGetData);
+	//mu_run_test(testRunlengthCompression);
+	//mu_run_test(testRunlengthDecompression);
 	mu_run_test(test24BitRateCompression);
 
 	return 0;

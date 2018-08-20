@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <dirent.h>
 #include <math.h>
 
@@ -10,8 +11,21 @@ struct runlengthEntry { //struct to represent a runlength entry of value and num
 };
 
 struct compressedVal { //struct to represent a multiple*8 bit compressed value
-	unsigned char *data;
+	unsigned char data[3];
 };
+
+/*
+ * Purpose:
+ *		Get the number of digits required to represent an numBits size number.
+ * Returns:
+ *		The maximum number of digits needed to represent a numBits number. (e.g. 2^7=128, 3 digits)
+ * Parameters:
+ *		1. numBits - the number of bits the number needs to represent it
+ */
+int numDigits (int numBits) {
+    if (numBits == 0) return 1;
+    return floor (log10 (pow(2,numBits))) + 1;
+}
 
 /* 
  * Purpose:  
@@ -63,12 +77,13 @@ float *runlengthDecompression(struct runlengthEntry *compressedValues, int count
 	
 	int newPos = 0;
 	for(i = 0; i < count; i++) {
-		while(compressedValues[i].valuecount != 0) {
+		while(compressedValues[i].valuecount != 0) { //whilst there's still entries to unpack
 			uncompressedValues[newPos] = compressedValues[i].value;
 			newPos++;
 			compressedValues[i].valuecount--;
 		}
 	}
+	//newPos++;
 	*newCount = newPos;
 	return uncompressedValues;
 }
@@ -98,8 +113,7 @@ struct runlengthEntry *runlengthCompression(float *values, int count, int *newCo
 			compressedData[ci].valuecount = 1;
 		}
 	}
-	ci++;
-	*newCount =  ci;
+	*newCount =  ci+1;
 	return compressedData;
 }
 
@@ -141,34 +155,75 @@ float *getData(char *absFilePath, int *dataLength) {
 struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int magBits, unsigned int precBits) {
 	int dataLength = 0;
 	float *uncompressedData = getData(absFilePath, &dataLength);
-	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal));
-	char sign;
-	float firstPart, secondPart;
-	uint32_t beforeDecimal, afterDecimal;
+	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal)); //get ds for new compressed data
+	char signBit;
+	unsigned int multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
+	printf("mult %d\n", multiplier);
+	float beforeDp, afterDp;
+	uint32_t before, after;
+	void *tmp;
+	char *uncompressedBytes;
+
 	int i;
-	int offset;
-	void *temp;
-	char *bytes;
 
 	for(i = 0; i < dataLength; i++) {
-		compressedData[i].data = malloc(3 * sizeof(char));
-		sign = uncompressedData[i]>0?0:1;
-		secondPart = modff(uncompressedData[i], &firstPart);
-		beforeDecimal = (uint32_t) firstPart;
-		afterDecimal = (uint32_t) (secondPart*10000);
-		compressedData[i].data[0] = sign << 7;
-		temp = &beforeDecimal;
-		bytes = (char *) (temp);
-		printf("asd %d %d\n", bytes[2], bytes[2] << 2);
-		compressedData[i].data[0] = compressedData[i].data[0] | bytes[0] << 2;
-		temp = &afterDecimal;
-		bytes = (char *) (temp);
-		compressedData[i].data[0] = compressedData[i].data[0] | bytes[3]; 
-		compressedData[i].data[1] = bytes[1];
-		compressedData[i].data[2] = bytes[0];
-		printf("start %d %d\n", beforeDecimal, afterDecimal);
-		printf("after %d:%d:%d\n\n", compressedData[i].data[0], compressedData[i].data[1], compressedData[i].data[2]);
+		//Initial setup and extract values to be stored
+		//compressedData[i].data = malloc(3 * sizeof(char)); //24 numBitsLOOK 
+		afterDp = modff(uncompressedData[i], &beforeDp); //extract values before and after decimal
+		//printf("1. %f\n", beforeDp);
+		//printf("2. %u\n", (uint32_t) abs(beforeDp));
+		before = (uint32_t) abs(beforeDp);
+		//printf("3. %u\n", before);
+		after = (uint32_t) (afterDp * multiplier);
+		//printf("4. %u\n", after);
+		//Extract sign bit and shift in
+		signBit = uncompressedData[i] > 0 ? 0 : 1; //1 for -ve 0 for +ve
+		compressedData[i].data[0] = signBit << 7;
+
+		//Extract before decimals bytes and shift in
+		tmp = &before;
+		uncompressedBytes = (char *) (tmp);
+		compressedData[i].data[0] = compressedData[i].data[0] | uncompressedBytes[0] << (7-magBits);
+
+		//Extract after decimals bytes and shift in
+		tmp = &after;
+		uncompressedBytes = (char *) (tmp);
+		compressedData[i].data[0] = compressedData[i].data[0] | uncompressedBytes[3];
+		compressedData[i].data[1] = uncompressedBytes[1];
+		compressedData[i].data[2] = uncompressedBytes[0];
 	}
+	printf("before break %f\n", uncompressedData[0]);
+	printf("split %u %u\n", before, after);
+	printf("after %u:%u:%u\n\n", compressedData[0].data[0], compressedData[0].data[1], compressedData[0].data[2]);
+
 	free(uncompressedData);
 	return compressedData;
+//	int dataLength = 0;
+
+
+	//int offset;
+	//void *temp;
+	//char *bytes;
+
+	//for(i = 0; i < dataLength; i++) {
+		//compressedData[i].data = malloc(3 * sizeof(char));
+		//sign = uncompressedData[i]>0?0:1;
+		//secondPart = modff(uncompressedData[i], &firstPart);
+		//beforeDecimal = (uint32_t) firstPart;
+		//afterDecimal = (uint32_t) (secondPart*(pow(10,precBits)));
+
+		//compressedData[i].data[0] = sign << 7;
+		//temp = &beforeDecimal;
+		//b//ytes = (char *) (temp);
+		//printf("asd %d %d\n", bytes[2], bytes[2] << 2);
+		//compressedData[i].data[0] = compressedData[i].data[0] | bytes[0] << 2;
+		//temp = &afterDecimal;
+		//bytes = (char *) (temp);
+		//compressedData[i].data[0] = compressedData[i].data[0] | bytes[3]; 
+		//compressedData[i].data[1] = bytes[1];
+		//compressedData[i].data[2] = bytes[0];
+
+	//}
+//	free(uncompressedData);
+//	return compressedData;
 }
