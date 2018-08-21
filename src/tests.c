@@ -130,18 +130,36 @@ static char *testRunlengthDecompression() {
  *		Test that the fixed 24 bit compression compresses and decompresses as expected
  */
 static char *test24BitRateCompression() {
-	char *file1 = "/home/crags/Documents/compressor-repo/data/test_datasets/24bit/5lines_5mag_18prec.txt";
+	char *file1Data = "/home/crags/Documents/compressor-repo/data/test_datasets/24bit/5lines_5mag_18prec.txt";
+	char *file1Expected = "/home/crags/Documents/compressor-repo/data/test_datasets/24bit/5lines_5mag_18prec_expected.txt";
 	int uncompressedCount = 0;
-	float *uncompressedData = getData(file1, &uncompressedCount);
-	struct compressedVal *compressedData = get24BitCompressedData(file1, 5, 18);
+	float *uncompressedData = getData(file1Data, &uncompressedCount);
+	struct compressedVal *compressedData = get24BitCompressedData(file1Data, 5, 18);
+	int expectedCount = 0;
+	int *expectedData = getVerificationData(file1Expected, &expectedCount);
+
+
+	int i;
+	int j = 0;
+	for(i = 0; i < uncompressedCount; i++) {
+		//printf("%u vs %u (exp)\n", compressedData[i].data[0], expectedData[j++]);
+		//printf("%u vs %u\n", compressedData[i].data[1], expectedData[j++]);
+		//printf("%u vs %u\n", compressedData[i].data[2], expectedData[j++]);
+		mu_assert("Error in test24BitRateCompression: compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
+		mu_assert("Error in test24BitRateCompression: compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
+		mu_assert("Error in test24BitRateCompression: compressed bytes dont match expected", compressedData[i].data[2] == expectedData[j++]);
+		//compressedData[i].data[0] expectedData[i*3+1]
+		//printf("%u %u %u\n", compressedData[i].data[0],compressedData[i].data[1],compressedData[i].data[2]);
+	}
+
 	return 0;
 }
  
 static char *all_tests() {
-	//mu_run_test(testGetAbsoluteFilepaths);
-	//mu_run_test(testGetData);
-	//mu_run_test(testRunlengthCompression);
-	//mu_run_test(testRunlengthDecompression);
+	mu_run_test(testGetAbsoluteFilepaths);
+	mu_run_test(testGetData);
+	mu_run_test(testRunlengthCompression);
+	mu_run_test(testRunlengthDecompression);
 	mu_run_test(test24BitRateCompression);
 
 	return 0;

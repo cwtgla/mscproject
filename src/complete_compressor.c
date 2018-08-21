@@ -4,14 +4,11 @@
 #include <stdint.h>
 #include <dirent.h>
 #include <math.h>
+#include "complete_compressor.h"
 
 struct runlengthEntry { //struct to represent a runlength entry of value and number of times its repeated
 	float value;
 	uint32_t valuecount;
-};
-
-struct compressedVal { //struct to represent a multiple*8 bit compressed value
-	unsigned char data[3];
 };
 
 /*
@@ -142,6 +139,22 @@ float *getData(char *absFilePath, int *dataLength) {
 	return exactContent;
 }
 
+int *getVerificationData(char *absFilePath, int *dataLength) {
+	FILE *contentFile = fopen(absFilePath, "r");
+	int *fileContent = malloc(100*sizeof(int)); //arbitrarily large allocation 
+	int i = 0;
+
+	while(fscanf(contentFile, "%d", &fileContent[i]) == 1) { //while there's still data left, copy it into the array
+		i++;
+	}
+	fclose(contentFile);
+	int *exactContent = malloc(i*sizeof(int));
+	memcpy(exactContent, fileContent, i*sizeof(int)); //cut down to what you need
+	*dataLength = i;
+
+	return exactContent;
+}
+
 /*
  * Purpose:
  * 		Compress the given data into a 24 bit format using the given parameters to cut down the original data
@@ -158,7 +171,7 @@ struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int mag
 	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal)); //get ds for new compressed data
 	char signBit;
 	unsigned int multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
-	printf("mult %d\n", multiplier);
+	printf("mul %u\n", multiplier);
 	float beforeDp, afterDp;
 	uint32_t before, after;
 	void *tmp;
@@ -173,28 +186,34 @@ struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int mag
 		//printf("1. %f\n", beforeDp);
 		//printf("2. %u\n", (uint32_t) abs(beforeDp));
 		before = (uint32_t) abs(beforeDp);
-		//printf("3. %u\n", before);
-		after = (uint32_t) (afterDp * multiplier);
-		//printf("4. %u\n", after);
+		//printf("before decimal. %u\n", before);
+		//printf("before format after decimal %f\n", afterDp);
+		//printf("mult %f\n", afterDp*multiplier);
+		//printf("abs %f %d\n", abs(afterDp), abs(afterDp*multiplier));
+		after = (uint32_t) (fabs(afterDp) * multiplier);
+		printf("after decimal. %u\n", after);
 		//Extract sign bit and shift in
 		signBit = uncompressedData[i] > 0 ? 0 : 1; //1 for -ve 0 for +ve
+		//printf("sign bit %d\n", signBit);
 		compressedData[i].data[0] = signBit << 7;
 
 		//Extract before decimals bytes and shift in
 		tmp = &before;
 		uncompressedBytes = (char *) (tmp);
-		compressedData[i].data[0] = compressedData[i].data[0] | uncompressedBytes[0] << (7-magBits);
-
+		//printf("values before OR %u %u %u\n", compressedData[i].data[0], uncompressedBytes[0] << (7-magBits), compressedData[i].data[0] | uncompressedBytes[0] << (7-magBits));
+		compressedData[i].data[0] = compressedData[i].data[0] | (uncompressedBytes[0] << (7-magBits));
 		//Extract after decimals bytes and shift in
 		tmp = &after;
 		uncompressedBytes = (char *) (tmp);
-		compressedData[i].data[0] = compressedData[i].data[0] | uncompressedBytes[3];
+		compressedData[i].data[0] = compressedData[i].data[0] | uncompressedBytes[2];
 		compressedData[i].data[1] = uncompressedBytes[1];
 		compressedData[i].data[2] = uncompressedBytes[0];
+		//printf("before break %f\n", uncompressedData[i]);
+		//printf("after %u:%u:%u\n\n", compressedData[i].data[0], compressedData[i].data[1], compressedData[i].data[2]);
 	}
-	printf("before break %f\n", uncompressedData[0]);
-	printf("split %u %u\n", before, after);
-	printf("after %u:%u:%u\n\n", compressedData[0].data[0], compressedData[0].data[1], compressedData[0].data[2]);
+	
+	//printf("split %u %u\n", before, after);
+	
 
 	free(uncompressedData);
 	return compressedData;

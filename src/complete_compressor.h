@@ -1,9 +1,15 @@
 #ifndef COMPLETE_COMPRESSOR_H_
 #define COMPLETE_COMPRESSOR_H_
 
+struct compressedVal { //struct to represent a multiple*8 bit compressed value
+	unsigned char data[3];
+};
+
 void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtension, int *count);
 
 float *getData(char *absFilePath, int *dataLength);
+
+int *getVerificationData(char *absFilePath, int *dataLength);
 
 struct runlengthEntry *runlengthCompression(float *values, int count, int *newCount);
 
