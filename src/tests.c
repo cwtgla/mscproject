@@ -139,18 +139,26 @@ static char *test24BitRateCompression() {
 	int *expectedData = getVerificationData(file1Expected, &expectedCount);
 
 
+	
+
+
+
+
+
+	//in a for loop for each test file
+
+	//Check that the compressed data matches up to the expected compressed representation
 	int i;
 	int j = 0;
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("%u vs %u (exp)\n", compressedData[i].data[0], expectedData[j++]);
-		//printf("%u vs %u\n", compressedData[i].data[1], expectedData[j++]);
-		//printf("%u vs %u\n", compressedData[i].data[2], expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression: compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression: compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
 		mu_assert("Error in test24BitRateCompression: compressed bytes dont match expected", compressedData[i].data[2] == expectedData[j++]);
-		//compressedData[i].data[0] expectedData[i*3+1]
-		//printf("%u %u %u\n", compressedData[i].data[0],compressedData[i].data[1],compressedData[i].data[2]);
+		mu_assert("Error in test24BitRateCompression: compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
+		mu_assert("Error in test24BitRateCompression: compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
 	}
+
+	//Check that the data decompresses as expected and uncompressed = decompressed
+
+
 
 	return 0;
 }

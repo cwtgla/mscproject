@@ -11,6 +11,11 @@ struct runlengthEntry { //struct to represent a runlength entry of value and num
 	uint32_t valuecount;
 };
 
+struct brokenValue { //struct to represent a float broken up into 2 ints, each pointer has 4 objects (32 bytes)
+	uint8_t *beforeDecimal;
+	uint8_t *afterDecimal;
+};
+
 /*
  * Purpose:
  *		Get the number of digits required to represent an numBits size number.
@@ -157,6 +162,29 @@ int *getVerificationData(char *absFilePath, int *dataLength) {
 
 /*
  * Purpose:
+ * 		Break a float into 2 ints and get it back
+ * Returns:
+ * 		a brokenValue struct which represents the float
+ * Parameters:
+ * 		1. value - The initial float value to be broken up
+ * 		2. multiplier - what order of 10 to multiply the value after the decimal point to
+ */
+struct brokenValue breakFloat(float value, unsigned int multiplier) {
+	float beforeDp, afterDp;
+	uint32_t before, after;
+	void *tmp1, *tmp2;
+	afterDp = modff(value, &beforeDp); //split the initial float into 2 floats, one for before decimal and the other for after
+	before = (uint32_t) abs(beforeDp);
+	after = (uint32_t) (fabs(afterDp) * multiplier);
+	tmp1 = &before;
+	tmp2 = &after;
+	struct brokenValue split = { .beforeDecimal =  (char *) (tmp1), .afterDecimal = (char *) (tmp2)}; 
+
+	return split;
+}
+
+/*
+ * Purpose:
  * 		Compress the given data into a 24 bit format using the given parameters to cut down the original data
  * Returns:
  * 		List of 24 bit values representing the original 32bit data
@@ -169,80 +197,89 @@ struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int mag
 	int dataLength = 0;
 	float *uncompressedData = getData(absFilePath, &dataLength);
 	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal)); //get ds for new compressed data
-	char signBit;
 	unsigned int multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
-	printf("mul %u\n", multiplier);
-	float beforeDp, afterDp;
-	uint32_t before, after;
-	void *tmp;
-	char *uncompressedBytes;
+	int i, highestByte, spare;
 
-	int i;
-
+	//Given a 32 bit number fit it into 24
 	for(i = 0; i < dataLength; i++) {
-		//Initial setup and extract values to be stored
-		//compressedData[i].data = malloc(3 * sizeof(char)); //24 numBitsLOOK 
-		afterDp = modff(uncompressedData[i], &beforeDp); //extract values before and after decimal
-		//printf("1. %f\n", beforeDp);
-		//printf("2. %u\n", (uint32_t) abs(beforeDp));
-		before = (uint32_t) abs(beforeDp);
-		//printf("before decimal. %u\n", before);
-		//printf("before format after decimal %f\n", afterDp);
-		//printf("mult %f\n", afterDp*multiplier);
-		//printf("abs %f %d\n", abs(afterDp), abs(afterDp*multiplier));
-		after = (uint32_t) (fabs(afterDp) * multiplier);
-		printf("after decimal. %u\n", after);
-		//Extract sign bit and shift in
-		signBit = uncompressedData[i] > 0 ? 0 : 1; //1 for -ve 0 for +ve
-		//printf("sign bit %d\n", signBit);
-		compressedData[i].data[0] = signBit << 7;
+		//break float into 2 ints representing before and after decimal values
+		struct brokenValue value = breakFloat(uncompressedData[i], multiplier);
 
-		//Extract before decimals bytes and shift in
-		tmp = &before;
-		uncompressedBytes = (char *) (tmp);
-		//printf("values before OR %u %u %u\n", compressedData[i].data[0], uncompressedBytes[0] << (7-magBits), compressedData[i].data[0] | uncompressedBytes[0] << (7-magBits));
-		compressedData[i].data[0] = compressedData[i].data[0] | (uncompressedBytes[0] << (7-magBits));
-		//Extract after decimals bytes and shift in
-		tmp = &after;
-		uncompressedBytes = (char *) (tmp);
-		compressedData[i].data[0] = compressedData[i].data[0] | uncompressedBytes[2];
-		compressedData[i].data[1] = uncompressedBytes[1];
-		compressedData[i].data[2] = uncompressedBytes[0];
-		//printf("before break %f\n", uncompressedData[i]);
-		//printf("after %u:%u:%u\n\n", compressedData[i].data[0], compressedData[i].data[1], compressedData[i].data[2]);
+		//If it's negative then shift a 1 in, else 0 and do nothing 
+		if (uncompressedData[i] < 0) {
+			compressedData[i].data[2] = 1 << 7;
+		}
+		//Case with 7 bits of magnitude, 16 of precision
+		if(magBits + 1 == 8) {
+			compressedData[i].data[2] = compressedData[i].data[2] | value.beforeDecimal[0];
+			compressedData[i].data[1] = value.afterDecimal[1];
+			compressedData[i].data[0] = value.afterDecimal[0];
+		} 
+		else if(magBits + 1 < 8) { //Case where some precision bits go into byte 2 (small mag, high prec)
+			compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[0] << (7-magBits));
+			compressedData[i].data[2] = compressedData[i].data[2] | value.afterDecimal[2];
+			compressedData[i].data[1] = value.afterDecimal[1];
+			compressedData[i].data[0] = value.afterDecimal[0];
+		} else if(magBits + 1 > 8) { //Magnitude takes up more than 1 byte
+			if(magBits > 16) {
+				highestByte = 2;
+			} else if(magBits > 8) {
+				highestByte = 1;
+			} else {
+				highestByte = 0;
+			}
+
+			int magBitsLeft = magBits;
+			int spareBits;
+			int compressedIndex = 2;
+			//adjusting compressedData data index?
+			while(highestByte != -1) {
+				spareBits = magBitsLeft & 8;
+				compressedData[i].data[compressedIndex] = compressedData[i].data[compressedIndex] | (value.beforeDecimal[highestByte] << (7 - spareBits));
+				magBitsLeft = magBitsLeft - spareBits;
+				if((magBitsLeft % 8) == 0) {
+					compressedIndex--;
+				}
+				highestByte--;
+			}
+
+			//19 bit mag, 3 prec
+			spare = magBits % 8;	//find how many bits are spare in the highest value (so we know how many are used)
+			compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[highestByte] << (7 - spare); //shift the bytes used to first available positions and take
+			highestByte--; //highest byte now stored so we move to next one
+			
+
+
+
+			//now in ubyte 2 has 4 bits occupied, 4 spare to be taken from byte 1, we want to and with 2^spare =1
+
+			compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[highestByte] & pow(2,spare+1)-1) << spare;
+			compressedData[i].data[1] = 
+
+
+			(value.beforeDecimal[highestByte] & pow(2,spare+1)-1) << spare;
+
+
+			//So now i know the highest byte and the index
+
+			//e.g 19 bits mag so byte 2 (19%8) 3 positions used. shift then 7-3 positions up so theyre now in pos 6->4
+
+			//magBits tell us how many bits of magnitude we care about, it tells us which bytes of before we need to care about
+
+			//if(magBits > 16)
+			//find out what bytes are occupied by magnitude, at most 3
+
+
+
+		
+
+		
+		//compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[0] << (7-magBits));
+		//compressedData[i].data[2] = compressedData[i].data[2] | value.afterDecimal[2];
+		//compressedData[i].data[1] = value.afterDecimal[1];
+		//compressedData[i].data[0] = value.afterDecimal[0];
+
 	}
-	
-	//printf("split %u %u\n", before, after);
-	
-
 	free(uncompressedData);
 	return compressedData;
-//	int dataLength = 0;
-
-
-	//int offset;
-	//void *temp;
-	//char *bytes;
-
-	//for(i = 0; i < dataLength; i++) {
-		//compressedData[i].data = malloc(3 * sizeof(char));
-		//sign = uncompressedData[i]>0?0:1;
-		//secondPart = modff(uncompressedData[i], &firstPart);
-		//beforeDecimal = (uint32_t) firstPart;
-		//afterDecimal = (uint32_t) (secondPart*(pow(10,precBits)));
-
-		//compressedData[i].data[0] = sign << 7;
-		//temp = &beforeDecimal;
-		//b//ytes = (char *) (temp);
-		//printf("asd %d %d\n", bytes[2], bytes[2] << 2);
-		//compressedData[i].data[0] = compressedData[i].data[0] | bytes[0] << 2;
-		//temp = &afterDecimal;
-		//bytes = (char *) (temp);
-		//compressedData[i].data[0] = compressedData[i].data[0] | bytes[3]; 
-		//compressedData[i].data[1] = bytes[1];
-		//compressedData[i].data[2] = bytes[0];
-
-	//}
-//	free(uncompressedData);
-//	return compressedData;
 }
