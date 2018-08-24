@@ -130,8 +130,8 @@ static char *testRunlengthDecompression() {
  *		Test that the fixed 24 bit compression compresses and decompresses as expected
  */
 static char *test24BitRateCompression() {
-	char *file1Data = "/home/manbearpig/Documents/compressor-repo/data/test_datasets/24bit/5lines_5mag_18prec.txt";
-	char *file1Expected = "/home/manbearpig/Documents/compressor-repo/data/test_datasets/24bit/5lines_5mag_18prec_expected.txt";
+	char *file1Data = "/home/crags/Documents/compressor-repo/data/test_datasets/24bit/5lines_5mag_18prec.txt";
+	char *file1Expected = "/home/crags/Documents/compressor-repo/data/test_datasets/24bit/5lines_5mag_18prec_expected.txt";
 	int uncompressedCount = 0;
 	float *uncompressedData = getData(file1Data, &uncompressedCount);
 	struct compressedVal *compressedData = get24BitCompressedData(file1Data, 5, 18);
@@ -164,10 +164,10 @@ static char *test24BitRateCompression() {
 }
  
 static char *all_tests() {
-	//mu_run_test(testGetAbsoluteFilepaths);
-	//mu_run_test(testGetData);
-	//mu_run_test(testRunlengthCompression);
-	//mu_run_test(testRunlengthDecompression);
+	mu_run_test(testGetAbsoluteFilepaths);
+	mu_run_test(testGetData);
+	mu_run_test(testRunlengthCompression);
+	mu_run_test(testRunlengthDecompression);
 	mu_run_test(test24BitRateCompression);
 
 	return 0;

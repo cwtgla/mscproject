@@ -1,0 +1,98 @@
+Dataset folder problem down into <..>prec.txt files which contain values to be compressed. Files <...>prec_expected.txt contain the decimal values the unsigned bytes in the 24 bit structure should be. See below for reasoning on values chosen and working.
+
+
+Working for:
+--------------------------------------------------------------------------------------------------------------------------------------
+	13 Mag 10 Prec. 2^13 = 8192 possible values, 8191 highest magnitude value. 2^10 = 1024 possible values, 1023 highest precision value. So multiply precision decimals by 1000 to get the value as an integer to 3 decimal places (we can represent 0-999 since with 4dp max is 1023 and we'd lose precision using it or extra overhead by seeing if we can store some values with extra precision and others without).
+
+	Values in 1-13-10 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
+
+	8191.1313813
+	2000.2008
+	0.0024
+	-245.42424
+	-8191.249294
+
+	Value breakdown
+		8191.1313813
+			sign: 0000
+			8191: 0001 1111 1111 1111
+			131: 1000 0011
+			combined: 0111 1111 1111 1100 1000 0011
+			values:		127			252			131
+
+
+		2000.2008
+			sign: 0000
+			2000: 0111 1101 0000
+			200: 1100 1000
+			combined: 0001 1111 0100 0000 1100 1000
+			values:		31			64			200
+
+		0.0024
+			sign: 0000
+			0: 0000
+			2: 10
+			combined: 0000 0000 0000 0000 0000 0010
+			values:		0			0			2
+
+		-245.42424
+			sign: 0001
+			245: 1111 0101
+			424: 0001 1010 1000
+			combined: 1000 0011 1101 0101 1010 1000
+			values:		131			213			168
+
+		-8191.249294
+			sign: 0001
+			8191: 0001 1111 1111 1111
+			249: 1111 1001
+			combined: 1111 1111 1111 1100 1111 1001
+			values:		255			252			249
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+	7 Mag 16 Prec. 2^7 = 128 possible values, 127 highest magnitude value. 2^16 = 65536 possible values, 65535 highest precision value. So multiply precision decimals by 100,000 to get the value as an integer to 4 decimal places (we can represent 0-99,999 since with 5dp max is 65535 and we'd lose precision using it or extra overhead by seeing if we can store some values with extra precision and others without).
+
+	Values in 1-7-16 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
+
+	127.14914914
+	15.22223
+	0.194
+	-102.424
+	-127.29424
+
+	Value breakdown
+		127.14914914
+			sign:
+			val1:
+			val2:
+			combined:
+			values:
+
+		15.22223
+			sign:
+			val1:
+			val2:
+			combined:
+			values:
+		0.194
+			sign:
+			val1:
+			val2:
+			combined:
+			values:
+
+		-102.424
+			sign:
+			val1:
+			val2:
+			combined:
+			values:
+
+		-127.29424
+			sign:
+			val1:
+			val2:
+			combined:
+			values:

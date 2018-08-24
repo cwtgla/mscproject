@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <dirent.h>
 #include <math.h>
+#include <assert.h>
 #include "complete_compressor.h"
 
 struct runlengthEntry { //struct to represent a runlength entry of value and number of times its repeated
@@ -144,6 +145,15 @@ float *getData(char *absFilePath, int *dataLength) {
 	return exactContent;
 }
 
+/*
+ * Purpose:
+ * 		Get the int data contained in a given file
+ * Returns:
+ * 		list of int representing unsigned bytes in decimal
+ * Parameters:
+ * 		1. absFilePath - absolute file path of the file that data will be extracted from
+ * 		2. dataLength - passed in to get the number of values/indexes of the data
+ */
 int *getVerificationData(char *absFilePath, int *dataLength) {
 	FILE *contentFile = fopen(absFilePath, "r");
 	int *fileContent = malloc(100*sizeof(int)); //arbitrarily large allocation 
@@ -185,6 +195,28 @@ struct brokenValue breakFloat(float value, unsigned int multiplier) {
 
 /*
  * Purpose:
+ * 		Deompress the 24 bit format data into a version of the original data with some precision lost
+ * Returns:
+ * 		List of 32bit ints representing the data contained in the 24 bit format
+ * Parameters:
+ * 		1. values - the 24 bit values to be decompressed
+ * 		2. magBits - number of bits used to represent magnitude in the 24 bit notation
+ *		3. precBits - number of bits used to represent precision in the 24 bit notation
+ */
+int *get24BitDecompression(struct compressedVal *values, unsigned int magBits, unsigned int precBits) {
+	return NULL;
+
+	//sign = byte 2 shift right 7, if its 1 then -ve else positive
+
+	//if mag+1 == 8
+
+	//if mag+1 less than 8
+
+	//if mag+1 more than 8
+}
+
+/*
+ * Purpose:
  * 		Compress the given data into a 24 bit format using the given parameters to cut down the original data
  * Returns:
  * 		List of 24 bit values representing the original 32bit data
@@ -199,6 +231,8 @@ struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int mag
 	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal)); //get ds for new compressed data
 	unsigned int multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
 	unsigned int i, space, target, compInd, valueInd;
+
+	assert (magBits + precBits + 1 == 24);
 
 	//Given a 32 bit number fit it into 24
 	for(i = 0; i < dataLength; i++) {
@@ -257,11 +291,14 @@ struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int mag
 					space = 8;
 				}
 			}
+			//Push in the magnitude, either in last byte or last byte and part of the 2nd last
+			if(magBits >= 17) { 
+				compressedData[i].data[0] = compressedData[i].data[0] || value.afterDecimal[0];
+			} else {
+				compressedData[i].data[1] = compressedData[i].data[1] || value.afterDecimal[1];
+				compressedData[i].data[0] = value.afterDecimal[0];
+			}
 		}
-
-		//todo code to insert precision, since magnitude overflowed, byte 2 is taken. so i'll need to insert into byte 1 or 0 so easy..
-		//todo tomorrow, papers, tests cases, finish insertion (doesnt need to work), look at data trends
-		//then weekend, finish testing, this, variable length and then a gpu transformation
 	}
 	free(uncompressedData);
 	return compressedData;
