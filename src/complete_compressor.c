@@ -198,7 +198,7 @@ struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int mag
 	float *uncompressedData = getData(absFilePath, &dataLength);
 	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal)); //get ds for new compressed data
 	unsigned int multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
-	int i, highestByte, spare;
+	unsigned int i, space, target, compInd, valueInd;
 
 	//Given a 32 bit number fit it into 24
 	for(i = 0; i < dataLength; i++) {
@@ -209,8 +209,7 @@ struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int mag
 		if (uncompressedData[i] < 0) {
 			compressedData[i].data[2] = 1 << 7;
 		}
-		//Case with 7 bits of magnitude, 16 of precision
-		if(magBits + 1 == 8) {
+		if(magBits + 1 == 8) { //Case with 7 bits of magnitude, 16 of precision
 			compressedData[i].data[2] = compressedData[i].data[2] | value.beforeDecimal[0];
 			compressedData[i].data[1] = value.afterDecimal[1];
 			compressedData[i].data[0] = value.afterDecimal[0];
@@ -220,65 +219,49 @@ struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int mag
 			compressedData[i].data[2] = compressedData[i].data[2] | value.afterDecimal[2];
 			compressedData[i].data[1] = value.afterDecimal[1];
 			compressedData[i].data[0] = value.afterDecimal[0];
-		} else if(magBits + 1 > 8) { //Magnitude takes up more than 1 byte
-			if(magBits > 16) {
-				highestByte = 2;
-			} else if(magBits > 8) {
-				highestByte = 1;
+		} else if(magBits + 1 > 8) { //Case where magnitude takes up 8 or more bits
+			space = 7; //8-sign
+			compInd = 2; //start on LHS byte of compressed struct
+
+			if(magBits >= 17) {
+				valueInd = 2;
+				target = magBits-16;
+			} else if(magBits >= 9) {
+				valueInd = 1;
+				target = magBits - 8;
 			} else {
-				highestByte = 0;
+				valueInd = 0;
+				target = magBits;
 			}
-
-			int magBitsLeft = magBits;
-			int spareBits;
-			int compressedIndex = 2;
-			//adjusting compressedData data index?
-			while(highestByte != -1) {
-				spareBits = magBitsLeft & 8;
-				compressedData[i].data[compressedIndex] = compressedData[i].data[compressedIndex] | (value.beforeDecimal[highestByte] << (7 - spareBits));
-				magBitsLeft = magBitsLeft - spareBits;
-				if((magBitsLeft % 8) == 0) {
-					compressedIndex--;
+			//While we have bits to insert or we're not on the last byte to insert
+			while (target != 0 || valueInd != 0) {
+				if (space >= target) { //If we can fit the current values byte into the compressed byte
+					compressedData[i].data[compInd] = compressedData[i].data[compInd] || value.beforeDecimal[valueInd] << (space-target);
+					space = space - target;
+					if(space == 0) { //If there's no space left, move to the next compressed byte
+						compInd--;
+						space = 8;
+					}
+					//Since we've emptied the current values bytes, move onto the next one
+					if(valueInd > 0) { //If we're not on our last byte, decrement
+						valueInd--;
+						target = 8;
+					} else { //We're finished
+						valueInd--;
+						target = 0;
+					}
+				} else { //We're trying to squeeze more data than we have free indexes
+					compressedData[i].data[compInd] = compressedData[i].data[compInd] || value.beforeDecimal[valueInd] >> (target-space);
+					compInd--;
+					target = target-space;
+					space = 8;
 				}
-				highestByte--;
 			}
+		}
 
-			//19 bit mag, 3 prec
-			spare = magBits % 8;	//find how many bits are spare in the highest value (so we know how many are used)
-			compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[highestByte] << (7 - spare); //shift the bytes used to first available positions and take
-			highestByte--; //highest byte now stored so we move to next one
-			
-
-
-
-			//now in ubyte 2 has 4 bits occupied, 4 spare to be taken from byte 1, we want to and with 2^spare =1
-
-			compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[highestByte] & pow(2,spare+1)-1) << spare;
-			compressedData[i].data[1] = 
-
-
-			(value.beforeDecimal[highestByte] & pow(2,spare+1)-1) << spare;
-
-
-			//So now i know the highest byte and the index
-
-			//e.g 19 bits mag so byte 2 (19%8) 3 positions used. shift then 7-3 positions up so theyre now in pos 6->4
-
-			//magBits tell us how many bits of magnitude we care about, it tells us which bytes of before we need to care about
-
-			//if(magBits > 16)
-			//find out what bytes are occupied by magnitude, at most 3
-
-
-
-		
-
-		
-		//compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[0] << (7-magBits));
-		//compressedData[i].data[2] = compressedData[i].data[2] | value.afterDecimal[2];
-		//compressedData[i].data[1] = value.afterDecimal[1];
-		//compressedData[i].data[0] = value.afterDecimal[0];
-
+		//todo code to insert precision, since magnitude overflowed, byte 2 is taken. so i'll need to insert into byte 1 or 0 so easy..
+		//todo tomorrow, papers, tests cases, finish insertion (doesnt need to work), look at data trends
+		//then weekend, finish testing, this, variable length and then a gpu transformation
 	}
 	free(uncompressedData);
 	return compressedData;
