@@ -225,17 +225,15 @@ int *get24BitDecompression(struct compressedVal *values, unsigned int magBits, u
  * 		2. magBits - number of bits to be used for the magnitude of the data (before decimal place)
  *		3. precBits - number of bits to be used for the precision of the data (after decimal place)
  */
-struct compressedVal *get24BitCompressedData(char *absFilePath, unsigned int magBits, unsigned int precBits) {
-	int dataLength = 0;
-	float *uncompressedData = getData(absFilePath, &dataLength);
-	struct compressedVal *compressedData = calloc(dataLength, sizeof(struct compressedVal)); //get ds for new compressed data
+struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned int count, unsigned int magBits, unsigned int precBits) {
+	struct compressedVal *compressedData = calloc(count, sizeof(struct compressedVal)); //get ds for new compressed data
 	unsigned int multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
 	unsigned int i, space, target, compInd, valueInd;
 
 	assert (magBits + precBits + 1 == 24);
 
 	//Given a 32 bit number fit it into 24
-	for(i = 0; i < dataLength; i++) {
+	for(i = 0; i < count; i++) {
 		//break float into 2 ints representing before and after decimal values
 		struct brokenValue value = breakFloat(uncompressedData[i], multiplier);
 

@@ -15,6 +15,6 @@ struct runlengthEntry *runlengthCompression(float *values, int count, int *newCo
 
 float *runlengthDecompression(struct runlengthEntry *compressedValues, int count, int *newCount);
 
-struct compressedVal* get24BitCompressedData(char *absFilePath, unsigned int magBits, unsigned int precBits);
+struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned int count, unsigned int magBits, unsigned int precBits);
 
 #endif
