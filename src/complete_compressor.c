@@ -12,7 +12,7 @@ struct runlengthEntry { //struct to represent a runlength entry of value and num
 	uint32_t valuecount;
 };
 
-struct brokenValue { //struct to represent a float broken up into 2 ints, each pointer has 4 objects (32 bytes)
+struct floatSplitValue { //struct to represent a float split up into 2 ints, each pointer has 3 objects (24 bytes)
 	uint8_t *beforeDecimal;
 	uint8_t *afterDecimal;
 };
@@ -172,23 +172,35 @@ int *getVerificationData(char *absFilePath, int *dataLength) {
 
 /*
  * Purpose:
- * 		Break a float into 2 ints and get it back
+ * 		Split a float into 2 ints and get it back in a floatSplitValue struct
  * Returns:
- * 		a brokenValue struct which represents the float
+ * 		a floatSplitValue struct which represents the float
  * Parameters:
  * 		1. value - The initial float value to be broken up
  * 		2. multiplier - what order of 10 to multiply the value after the decimal point to
  */
-struct brokenValue breakFloat(float value, unsigned int multiplier) {
+struct floatSplitValue splitFloat(float value, unsigned int multiplier) {
 	float beforeDp, afterDp;
 	uint32_t before, after;
-	void *tmp1, *tmp2;
-	afterDp = modff(value, &beforeDp); //split the initial float into 2 floats, one for before decimal and the other for after
-	before = (uint32_t) abs(beforeDp);
+
+	afterDp = modff(value, &beforeDp); //Split val into 2 floats and convert to ints
+	before = (uint32_t) fabs(beforeDp);
 	after = (uint32_t) (fabs(afterDp) * multiplier);
-	tmp1 = &before;
-	tmp2 = &after;
-	struct brokenValue split = { .beforeDecimal =  (char *) (tmp1), .afterDecimal = (char *) (tmp2)}; 
+
+	printf("before %d, after %d\n", before, after);
+	uint8_t *beforeBytes = malloc(3*sizeof(uint8_t));
+	beforeBytes[2] = (before >> 16) & 0xFF;
+	beforeBytes[1] = (before >> 8) & 0xFF;
+	beforeBytes[0] = before & 0xFF;
+
+	uint8_t *afterBytes = malloc(3*sizeof(uint8_t));
+	afterBytes[2] = (after >> 16) & 0xFF;
+	afterBytes[1] = (after >> 8) & 0xFF;
+	afterBytes[0] = after & 0xFF;
+
+	struct floatSplitValue split = { .beforeDecimal = beforeBytes, .afterDecimal = afterBytes};
+	printf("before bytes %u %u %u\n", split.beforeDecimal[2], split.beforeDecimal[1], split.beforeDecimal[0]);
+	printf("after bytes %u %u %u\n", split.afterDecimal[2], split.afterDecimal[1], split.afterDecimal[0]);
 
 	return split;
 }
@@ -228,15 +240,17 @@ int *get24BitDecompression(struct compressedVal *values, unsigned int magBits, u
 struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned int count, unsigned int magBits, unsigned int precBits) {
 	struct compressedVal *compressedData = calloc(count, sizeof(struct compressedVal)); //get ds for new compressed data
 	unsigned int multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
-	unsigned int i, space, target, compInd, valueInd;
-
+	unsigned int i, space, target, compInd, valueInd; //value ind is the byte number of the before d.p. value containing bits to store
+	struct floatSplitValue value;
 	assert (magBits + precBits + 1 == 24);
 
 	//Given a 32 bit number fit it into 24
 	for(i = 0; i < count; i++) {
+		printf("\n\n");
+		//printf("breaking %f", uncompressedData[i]);
 		//break float into 2 ints representing before and after decimal values
-		struct brokenValue value = breakFloat(uncompressedData[i], multiplier);
-
+		value = splitFloat(uncompressedData[i], multiplier);
+		//printf("for value %u %u\n", *value.beforeDecimal, *value.afterDecimal);
 		//If it's negative then shift a 1 in, else 0 and do nothing 
 		if (uncompressedData[i] < 0) {
 			compressedData[i].data[2] = 1 << 7;
@@ -258,42 +272,61 @@ struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned i
 			if(magBits >= 17) {
 				valueInd = 2;
 				target = magBits-16;
+				printf("Magbits >= 17, so looking at byte %d and target is %d\n", valueInd, target);
 			} else if(magBits >= 9) {
 				valueInd = 1;
 				target = magBits - 8;
+				printf("Magbits >= 9, so looking at byte %d and target is %d\n", valueInd, target);
 			} else {
 				valueInd = 0;
 				target = magBits;
+				printf("Magbits less than 9, so looking at byte %d and target is %d\n", valueInd, target); //TODO review this
 			}
 			//While we have bits to insert or we're not on the last byte to insert
-			while (target != 0 || valueInd != 0) {
+			while (target != 0 && valueInd >= 0) {
+				printf("hit while\n");
+				//printf("\n\n\n");
+				//printf("for value %u %u %u : %u %u %u\n", value.beforeDecimal[2],value.beforeDecimal[1],value.beforeDecimal[0], value.afterDecimal[2],value.afterDecimal[1],value.afterDecimal[0]);
 				if (space >= target) { //If we can fit the current values byte into the compressed byte
-					compressedData[i].data[compInd] = compressedData[i].data[compInd] || value.beforeDecimal[valueInd] << (space-target);
+					printf("Space >= target, moving all of the bits into the compressed byte %d space %d target\n", space, target);
+					printf("moving %u %d to the left (byte comp %d value %d)\n", value.beforeDecimal[valueInd], (space-target), compInd, valueInd);
+					
+					compressedData[i].data[compInd] = compressedData[i].data[compInd] | (value.beforeDecimal[valueInd] << (space-target));
+					printf("wtf %u", value.beforeDecimal[valueInd]);
+					printf("current byte value is %u\n", compressedData[i].data[compInd]);
 					space = space - target;
 					if(space == 0) { //If there's no space left, move to the next compressed byte
+						printf("space is 0, moving to next compressed byte\n");
 						compInd--;
 						space = 8;
 					}
 					//Since we've emptied the current values bytes, move onto the next one
 					if(valueInd > 0) { //If we're not on our last byte, decrement
+						printf("byte we're compressing is finished, moving to next\n");
+						printf("status %d %d\n", target, valueInd);
 						valueInd--;
 						target = 8;
 					} else { //We're finished
+						printf("no more bytes to compress, done!\n");
 						valueInd--;
 						target = 0;
+						//printf("values now %d %d %d\n", valueInd, space, target);
 					}
 				} else { //We're trying to squeeze more data than we have free indexes
-					compressedData[i].data[compInd] = compressedData[i].data[compInd] || value.beforeDecimal[valueInd] >> (target-space);
+					printf("Space <= target, we're trying to move more than what we have %d space %d target (byte comp %d value %d)\n", space, target, compInd, valueInd);
+					printf("shifting %u %d to the right",value.beforeDecimal[valueInd], (target-space));
+					compressedData[i].data[compInd] = compressedData[i].data[compInd] | (value.beforeDecimal[valueInd] >> (target-space));
 					compInd--;
 					target = target-space;
 					space = 8;
 				}
 			}
+			printf("out of while %u %u %u\n", compressedData[i].data[2],compressedData[i].data[1],compressedData[i].data[0]);
 			//Push in the magnitude, either in last byte or last byte and part of the 2nd last
 			if(magBits >= 17) { 
-				compressedData[i].data[0] = compressedData[i].data[0] || value.afterDecimal[0];
+				compressedData[i].data[0] = compressedData[i].data[0] | value.afterDecimal[0];
 			} else {
-				compressedData[i].data[1] = compressedData[i].data[1] || value.afterDecimal[1];
+				compressedData[i].data[1] = compressedData[i].data[1] | value.afterDecimal[1];
 				compressedData[i].data[0] = value.afterDecimal[0];
 			}
 		}
