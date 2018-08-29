@@ -1,3 +1,6 @@
+//FILE: complete_compresor.h 
+//AUTHOR: Craig Thomson
+//PURPOSE: headers for functions used for compression/decompression/etc by test/data analysis files
 #ifndef COMPLETE_COMPRESSOR_H_
 #define COMPLETE_COMPRESSOR_H_
 
@@ -11,10 +14,14 @@ float *getData(char *absFilePath, int *dataLength);
 
 int *getVerificationData(char *absFilePath, int *dataLength);
 
-struct runlengthEntry *runlengthCompression(float *values, int count, int *newCount);
+int numDigits (int numBits);
 
-float *runlengthDecompression(struct runlengthEntry *compressedValues, int count, int *newCount);
+struct runlengthEntry *getRunlengthCompressedData(float *values, int count, int *newCount);
+
+float *getRunlengthDecompressedData(struct runlengthEntry *compressedValues, int count, int *newCount);
 
 struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned int count, unsigned int magBits, unsigned int precBits);
+
+float *get24BitDecompressedData(struct compressedVal *values, unsigned int count, unsigned int magBits, unsigned int precBits);
 
 #endif
