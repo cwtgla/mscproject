@@ -8,9 +8,14 @@ struct compressedVal { //struct to represent a multiple*8 bit compressed value
 	unsigned char data[3];
 };
 
+struct runlengthEntry { //Struct to represent a runlength entry of value and number of times its repeated
+	float value;
+	uint32_t valueCount;
+};
+
 void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtension, int *count);
 
-float *getData(char *absFilePath, int *dataLength);
+float *getData(char *absFilePath, int *count, float *max, float *min, float *mean);
 
 int *getVerificationData(char *absFilePath, int *dataLength);
 

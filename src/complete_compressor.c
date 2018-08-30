@@ -10,11 +10,7 @@
 #include <math.h>
 #include <assert.h>
 #include "complete_compressor.h"
-
-struct runlengthEntry { //Struct to represent a runlength entry of value and number of times its repeated
-	float value;
-	uint32_t valueCount;
-};
+#include <float.h>
 
 struct floatSplitValue { //Struct to represent the before and after decimal point values of a float split (3 bytes for each)
 	uint8_t *beforeDecimal;
@@ -56,20 +52,33 @@ void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtensio
  * 		An array of floats representing data in the file.
  * Parameters:
  * 		1. absFilePath - Absolute file path of the file that data will be extracted from.
- * 		2. dataLength - Blank pointer passed in to be assigned to the number of indexes in the returned array.
+ * 		2. count - Blank pointer passed in to be assigned to the number of indexes in the returned array.
+ *		3. max - Blank pointer passed in to be assigned to the maximum value in the returned array.
+ *		4. min - Blank pointer passed in to be assigned to the minimum value in the returned array.
+ *		5. mean - Blank pointer passed in to be assigned to the average value of the returned array.
  */
-float *getData(char *absFilePath, int *dataLength) {
+float *getData(char *absFilePath, int *count, float *max, float *min, float *mean) {
 	FILE *contentFile = fopen(absFilePath, "r");
 	float *fileContent = malloc((150*150*150)*sizeof(float)); //arbitrarily large allocation for other datasets
 	int i = 0;
+	*max = FLT_MIN;
+	*min = FLT_MAX;
+	float total = 0;
 
 	while(fscanf(contentFile, "%f", &fileContent[i]) == 1) { //while there's still data left, copy it into the array
+		total+=fileContent[i];
+		if(fileContent[i] > *max) {
+			*max = fileContent[i];
+		} else if(fileContent[i] < *min) {
+			*min = fileContent[i];
+		}
 		i++;
 	}
 	fclose(contentFile);
 	float *exactContent = malloc(i*sizeof(float)); //resize to whats needed
 	memcpy(exactContent, fileContent, i*sizeof(float));
-	*dataLength = i;
+	*count = i;
+	*mean = total/ *count;
 
 	return exactContent;
 }

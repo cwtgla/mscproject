@@ -1,6 +1,6 @@
 #ifndef ZFP_EXAMPLE_H_
 #define ZFP_EXAMPLE_H_
 
-size_t compress(float *array, int nx, int ny, int nz, double tolerance, int decompress);
+size_t zfpCompress(float *array, int nx, int ny, int nz, double tolerance, int decompress);
 
 #endif //ZFP_EXAMPLE_H_

@@ -34,10 +34,11 @@ static char *testGetData() {
 	char *file2 = "../data/test_datasets/getdata/0lines.txt";
 	int lineCount1 = 0;
 	int lineCount2 = 0;
+	float junk = 0.0;
 
-	float *contents1 = getData(file1, &lineCount1);
+	float *contents1 = getData(file1, &lineCount1, &junk, &junk, &junk);
 	mu_assert("ERROR in testGetData: expected number of entries hasn't been retrieved (100)", lineCount1 == 100);
-	float *contents2 = getData(file2, &lineCount2);
+	float *contents2 = getData(file2, &lineCount2, &junk, &junk, &junk);
 	mu_assert("ERROR in testGetData: expected number of entries hasn't been retrieved (0)", lineCount2 == 0);
 	free(contents1);
 	free(contents2);
@@ -53,7 +54,8 @@ static char *testGetRunlengthCompressedData() {
 	//dataset for a situation where there's no improvement in compression
 	char *file1 = "../data/test_datasets/runlength/runlength_0_compression.txt";
 	int uncompressedCount = 0;
-	float *uncompressedData = getData(file1, &uncompressedCount);
+	float junk = 0.0;
+	float *uncompressedData = getData(file1, &uncompressedCount, &junk, &junk, &junk);
 	int compressedCount = 0;
 	struct runlengthEntry *compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
 	mu_assert("ERROR in testRunlengthCompression: 0 compression example isn't working as expected", uncompressedCount == compressedCount);
@@ -63,7 +65,7 @@ static char *testGetRunlengthCompressedData() {
 	//dataset for a situation where the number of data entries can be halved
 	char *file2 = "../data/test_datasets/runlength/runlength_50_compression.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(file2, &uncompressedCount);
+	uncompressedData = getData(file2, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
 	mu_assert("Error in testRunlengthCompression: 50% compression example isn't working as expected", compressedCount == (uncompressedCount/2));
@@ -73,7 +75,7 @@ static char *testGetRunlengthCompressedData() {
 	//dataset for a situation where there's all data can be compressed into 1 entry
 	char *file3 = "../data/test_datasets/runlength/runlength_100_compression.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(file3, &uncompressedCount);
+	uncompressedData = getData(file3, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
 	mu_assert("Error in testRunlengthCompression: 100% compression example isn't working as expected", compressedCount == 1);
@@ -91,7 +93,8 @@ static char *testGetRunlengthDecompressedData() {
 	//dataset for a situation where there's all data can be compressed into 1 entry
 	char *file1 = "../data/test_datasets/runlength/runlength_100_compression.txt";
 	int uncompressedCount = 0;
-	float *uncompressedData = getData(file1, &uncompressedCount);
+	float junk = 0.0;
+	float *uncompressedData = getData(file1, &uncompressedCount, &junk, &junk, &junk);
 	int compressedCount = 0;
 	struct runlengthEntry *compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
 	int decompressedCount = 0;
@@ -107,7 +110,7 @@ static char *testGetRunlengthDecompressedData() {
 	//dataset for a situation where there's all data can be compressed into 1 entry
 	char *file2 = "../data/test_datasets/runlength/runlength_50_compression.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(file2, &uncompressedCount);
+	uncompressedData = getData(file2, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
 	decompressedCount = 0;
@@ -132,7 +135,8 @@ static char *testGet24BitCompressedData() {
 	//Grab data from file, compress it
 	char *testDataset = "../data/test_datasets/24bit/5lines_5mag_18prec.txt";
 	int uncompressedCount = 0;
-	float *uncompressedData = getData(testDataset, &uncompressedCount);
+	float junk = 0.0;
+	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	struct compressedVal *compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 5, 18);
 	//Grab expected int values for each byte (3*uncompressedCount values)
 	char *testCompressedVals = "../data/test_datasets/24bit/5lines_5mag_18prec_expected.txt";
@@ -151,7 +155,7 @@ static char *testGet24BitCompressedData() {
 	//Grab data from file, compress it
 	testDataset = "../data/test_datasets/24bit/5lines_7mag_16prec.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(testDataset, &uncompressedCount);
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
 	//Grab expected int values for each byte (3*uncompressedCount values)
 	testCompressedVals = "../data/test_datasets/24bit/5lines_7mag_16prec_expected.txt";
@@ -169,7 +173,7 @@ static char *testGet24BitCompressedData() {
 	//Grab data from file, compress it
 	testDataset = "../data/test_datasets/24bit/5lines_13mag_10prec.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(testDataset, &uncompressedCount);
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 13, 10);
 	//Grab expected int values for each byte (3*uncompressedCount values)
 	testCompressedVals = "../data/test_datasets/24bit/5lines_13mag_10prec_expected.txt";
@@ -193,7 +197,8 @@ static char *testGet24BitDecompressedData() {
 	//tests for 1-5-18 dataset
 	char *testDataset = "../data/test_datasets/24bit/5lines_5mag_18prec.txt";
 	int uncompressedCount = 0;
-	float *uncompressedData = getData(testDataset, &uncompressedCount);
+	float junk = 0.0;
+	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	struct compressedVal *compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 5, 18);
 	float *decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 5, 18);
 	int i;
@@ -204,7 +209,7 @@ static char *testGet24BitDecompressedData() {
 	//tests for 1-7-16 dataset
 	testDataset = "../data/test_datasets/24bit/5lines_7mag_16prec.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(testDataset, &uncompressedCount);
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 7, 16);
 	for(i = 0; i < uncompressedCount; i++) {
@@ -214,7 +219,7 @@ static char *testGet24BitDecompressedData() {
 	//tests for 1-13-10 dataset
 	testDataset = "../data/test_datasets/24bit/5lines_13mag_10prec.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(testDataset, &uncompressedCount);
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 13, 10);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 13, 10);
 	for(i = 0; i < uncompressedCount; i++) {

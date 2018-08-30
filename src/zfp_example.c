@@ -1,14 +1,14 @@
 /* minimal code example showing how to call the zfp (de)compressor */
-
+//taken from zfp docs
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "zfp_example.h"
-#include "zfp.h"
+#include <zfp.h>
 
 /* compress or decompress array */
-size_t compress(float* array, int nx, int ny, int nz, double tolerance, int decompress)
+size_t zfpCompress(float* array, int nx, int ny, int nz, double tolerance, int decompress)
 {
   int status = 0;    /* return value: 0 = success */
   zfp_type type;     /* array scalar type */
