@@ -269,7 +269,6 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 20, 3);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 20, 3);
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("val1 %f val2 %f\n", uncompressedData[i], decompressedData[i]);
 		mu_assert("Error in test24BitRateDecompression (1-20-3): compressed bytes dont match expected", pow(10,numDigits(3)) > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
@@ -281,7 +280,7 @@ static char *testGet24BitDecompressedData() {
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 15, 8);
 	for(i = 0; i < uncompressedCount; i++) {
 		printf("val1 %f val2 %f\n", uncompressedData[i], decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-20-3): compressed bytes dont match expected", pow(10,numDigits(8)) > fabs(uncompressedData[i] - decompressedData[i]));
+		mu_assert("Error in test24BitRateDecompression (1-15-8): compressed bytes dont match expected", pow(10,numDigits(8)) > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
 	return 0;

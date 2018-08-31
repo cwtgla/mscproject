@@ -318,7 +318,7 @@ float *get24BitDecompressedData(struct compressedVal *values, unsigned int count
 	if(numDigits(precBits) == 1) {
 		divider = 10;
 	} else {
-		pow(10, numDigits(precBits)-1);
+		divider = pow(10, numDigits(precBits)-1);
 	}
 	unsigned int beforeDp = 0;
 	unsigned int afterDp = 0;
