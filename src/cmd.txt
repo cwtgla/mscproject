@@ -7,3 +7,6 @@ gcc compressor.c complete_compressor.o zfp_example.o -L/home/crags/Documents/zfp
 
 gcc -c -I/home/crags/Documents/zfp/include -L/home/crags/Documents/zfp/lib -lzfp zfp_example.c
 gcc compressor.c complete_compressor.o -lm -o compressor.exe
+
+
+

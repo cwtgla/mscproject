@@ -1,7 +1,104 @@
 Dataset folder problem down into <..>prec.txt files which contain values to be compressed. Files <...>prec_expected.txt contain the decimal values the unsigned bytes in the 24 bit structure should be. See below for reasoning on values chosen and working.
 
-
 Working for:
+--------------------------------------------------------------------------------------------------------------------------------------
+	15 Mag, 8 Prec.
+	2^15 = 32768 possible values, 32767 highest magnitude value. 
+	2^8 = 256 possible values, .255 highest precision value. Multiply precision decimal by 100 to get the value as an integer to 2 decimal places.
+	We represent 0-99 as a magnitude, since if we used the extra bit we'd still lose precision as only up to 32k can be represented and it'd cause more complexity and overhead checking if we can be slightly more precise.
+
+	Values in 1-15-8 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
+
+	32767.441
+	7091.237
+	0.996
+	-1500.104565
+	-32767.2859
+
+	Value breakdown
+		32767.441
+			sign: 0000
+			32767: 0111 1111 1111 1111
+			44: 0000 0000 0010 1100
+			combined: 0111 1111 1111 1111 0010 1100
+			values:  	127			255		44
+
+		7091.237
+			sign: 0000
+			7091: 0001 1011 1011 0011
+			23: 0000 0000 0001 0111
+			combined: 0001 1011 1011 0011 0001 0111
+			values:		27			179		23
+
+		0.996
+			sign: 0000
+			0: 0000 0000 0000 0000
+			99: 0000 0000 0110 0011
+			combined: 0000 0000 0000 0000 0110 0011
+			values:		0			0		99
+
+		-1500.104565
+			sign: 0001
+			1500: 0000 0101 1101 1100
+			10: 0000 0000 0000 1010
+			combined: 1000 0101 1101 1100 0000 1010
+			values:		133			220		10
+
+		-32767.2859
+			sign: 0001
+			32767: 0111 1111 1111 1111
+			28: 0000 0000 0001 1100
+			combined: 1111 1111 1111 1111 0001 1100
+			values: 	255			255		28
+--------------------------------------------------------------------------------------------------------------------------------------
+	20 Mag 3 Prec.
+	2^20 = 1048576 possible values, 1048575 highest magnitude value. 
+	2^3 = 8 possible values, .7 highest precision value. Multiply precision decimal by 10 to get the value as an integer to 1 decimal places.
+	We represent 0-999,999 as a magnitude, since if we used the extra bit we'd still lose precision as only up to 1.04m can be represented and it'd cause more complexity and overhead checking if we can be slightly more precise.
+
+	Values in 1-20-3 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
+
+	1048575.1234
+	790034.3334
+	0.10238767
+	-55000.9715
+	-1048575.762859
+
+	Value breakdown
+		1048575.1234
+			sign: 0000
+			1048575: 1111 1111 1111 1111 1111
+			1: 0000 0000 0000 0001
+			combined: 0111 1111 1111 1111 1111 1001
+			values:  	127			255		249
+
+		790034.3334
+			sign: 0000
+			790034: 1100 0000 1110 0001 0010
+			3: 0000 0000 0000 0011
+			combined: 0110 0000 0111 0000 1001 0011
+			values:		96			112		147
+
+		0.10238767
+			sign: 0000
+			0: 0000 0000 0000 0000
+			1: 0000 0000 0000 0001
+			combined: 0000 0000 0000 0000 0000 0001
+			values:		0			0		1
+
+		-55000.9915
+			sign: 0001
+			55000: 0000 1101 0110 1101 1000
+			9: 0000 0000 0000 1001
+			combined: 1000 0110 1011 0110 1100 0001
+			values:		134			182		193
+
+		-1048575.762859
+			sign: 0001
+			1048575: 1111 1111 1111 1111 1111
+			7: 0000 0000 0100 0111
+			combined: 1111 1111 1111 1111 1111 1111
+			values: 	255			255		255
 --------------------------------------------------------------------------------------------------------------------------------------
 	5 Mag 18 Prec. 
 	2^5 = 32 possible values, 31 highest magnitude value. 

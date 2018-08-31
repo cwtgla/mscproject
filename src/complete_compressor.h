@@ -1,6 +1,8 @@
 //FILE: complete_compresor.h 
 //AUTHOR: Craig Thomson
 //PURPOSE: headers for functions used for compression/decompression/etc by test/data analysis files
+#include <stdint.h>
+
 #ifndef COMPLETE_COMPRESSOR_H_
 #define COMPLETE_COMPRESSOR_H_
 
