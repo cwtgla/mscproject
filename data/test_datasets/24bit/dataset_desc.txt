@@ -9,11 +9,11 @@ Working for:
 
 	Values in 1-15-8 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
 
-	32767.441
-	7091.237
-	0.996
-	-1500.104565
-	-32767.2859
+	32767.44
+	7091.23
+	0.99
+	-1500.10
+	-32767.28
 
 	Value breakdown
 		32767.441
@@ -58,11 +58,11 @@ Working for:
 
 	Values in 1-20-3 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
 
-	1048575.1234
-	790034.3334
-	0.10238767
-	-55000.9715
-	-1048575.762859
+	1048575.1
+	790034.3
+	0.1
+	-55000.9
+	-1048575.7
 
 	Value breakdown
 		1048575.1234
@@ -107,35 +107,35 @@ Working for:
 
 	Values in 1-5-18 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
 
-	31.15115643
-	3.12009501
-	0.10238767
-	-5.08325113
-	-31.04582059
+	31.15115
+	3.12009
+	0.10238
+	-5.08325
+	-31.04582
 
 	Value breakdown
-		31.15115643
+		31.15115
 			sign: 0000
 			31: 0000 0000 0001 1111
 			15115: 0011 1011 0000 1011
 			combined: 0111 1100 0011 1011 0000 1011
 			values:   	124			59		11
 
-		3.12009501
+		3.12009
 			sign: 0000
 			3: 0000 0000 0000 0011
 			12009: 0010 1110 1110 1001
 			combined: 0000 1100 0010 1110 1110 1001
 			values:		12			46		233
 
-		0.10238767
+		0.10238
 			sign: 0000
 			0: 0000 0000 0000 0000
 			10238: 0010 0111 1111 1110
 			combined: 0000 0000 0010 0111 1111 1110
 			values:		0			39		254
 
-		-15.08325113
+		-15.08325
 			sign: 0001
 			15: 0000 0000 0000 1111
 			8325: 0010 0000 1000 0101
@@ -143,7 +143,7 @@ Working for:
 			combined: 1011 1100 0010 0000 1000 0101
 			values:		188			32		133
 
-		-30.04582059
+		-30.04582
 			sign: 0001
 			30: 0000 0000 0001 1110
 			4582: 0001 0001 1110 0110
@@ -157,14 +157,14 @@ Working for:
 
 	Values in 1-13-10 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
 
-	8191.1313813
-	2000.2008
-	0.0024
-	-245.42424
-	-8191.249294
+	8191.131
+	2000.200
+	0.002
+	-245.424
+	-8191.249
 
 	Value breakdown
-		8191.1313813
+		8191.131
 			sign: 0000
 			8191: 0001 1111 1111 1111
 			131: 1000 0011
@@ -172,28 +172,28 @@ Working for:
 			values:		127			252			131
 
 
-		2000.2008
+		2000.200
 			sign: 0000
 			2000: 0111 1101 0000
 			200: 1100 1000
 			combined: 0001 1111 0100 0000 1100 1000
 			values:		31			64			200
 
-		0.0024
+		0.002
 			sign: 0000
 			0: 0000
 			2: 10
 			combined: 0000 0000 0000 0000 0000 0010
 			values:		0			0			2
 
-		-245.42424
+		-245.424
 			sign: 0001
 			245: 1111 0101
 			424: 0001 1010 1000
 			combined: 1000 0011 1101 0101 1010 1000
 			values:		131			213			168
 
-		-8191.249294
+		-8191.249
 			sign: 0001
 			8191: 0001 1111 1111 1111
 			249: 1111 1001
@@ -207,42 +207,42 @@ Working for:
 
 	Values in 1-7-16 dataset (sign-mag-prec). Values chosen to represent the various states that data can be in (sign bit present/not, pushing limit of what can be stored etc.)
 
-	127.14914914
-	15.22223399
-	0.19442424
-	-102.4241112
-	-127.2942485607
+	127.1491
+	15.2222
+	0.1944
+	-102.4241
+	-127.2942
 
 	Value breakdown
-		127.14914914
+		127.1491
 			sign: 0000
 			127: 0000 0000 0111 1111
 			1491: 0000 0000 0101 1101 0011
 			combined: 0111 1111 0000 0101 1101 0011
 			values:    127			5		211
 
-		15.22223399
+		15.2222
 			sign: 0000
 			15: 0000 0000 0000 1111
 			2222: 0000 1000 1010 1110
 			combined: 0000 1111 0000 1000 1010 1110
 			values:		15			8		174
 
-		0.19442424
+		0.1944
 			sign: 0000
 			0: 0000 0000 0000 0000
 			1944: 0000 0111 1001 1000
 			combined: 0000 0000 0000 0111 1001 1000
 			values:		0			7		152
 
-		-102.4241112
+		-102.4241
 			sign: 0001
 			102: 0000 0110 0110
 			4241: 0001 0000 1001 0001
 			combined: 1110 0110 0001 0000 1001 0001
 			values:		230			16		145
 
-		-127.2942485607
+		-127.2942
 			sign: 0001
 			127: 0000 0000 0111 1111
 			2942: 0000 1011 0111 1110

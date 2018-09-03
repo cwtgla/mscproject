@@ -136,7 +136,9 @@ struct floatSplitValue splitFloat(float value, unsigned int multiplier) {
 
 	afterDp = modff(value, &beforeDp); //modff to get the before and after decimal as floats
 	before = (uint32_t) fabs(beforeDp);
-	after = (uint32_t) (fabs(afterDp) * multiplier);
+	//printf("scaling up by %u\n", multiplier);
+	//printf("before %f after %f\n", afterDp, afterDp* (float)multiplier);
+	after = (uint32_t) round((fabs(afterDp) * multiplier));
 
 	uint8_t *beforeBytes = malloc(3*sizeof(uint8_t)); //strip out byte by byte
 	beforeBytes[2] = (before >> 16) & 0xFF;
@@ -269,7 +271,6 @@ struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned i
 
 			while (target != 0 && uci >= 0) {	//While we have bits to insert and we've got bytes to extract from
 				if (space >= target) { //If we can fit the current values byte into the compressed byte
-
 					compressedData[i].data[ci] = compressedData[i].data[ci] | (value.beforeDecimal[uci] << (space-target));
 					space = space - target;
 					if(space == 0) { //If there's no space left, move to the next compressed byte
@@ -353,37 +354,233 @@ float *get24BitDecompressedData(struct compressedVal *values, unsigned int count
 					beforeDp = beforeDp | (values[i].data[ci] << (magBitsLeft-8));
 					magBitsLeft = magBitsLeft - 8;
 					ci--;
-				} else {
+				} else { //LHS of byte of interest, use masks to extract relevant bits
 					beforeDp = beforeDp | ((((uint32_t) pow(2,8)-1) - ((uint32_t) pow(2,8-magBitsLeft)-1)) & values[i].data[ci]) >> (8-magBitsLeft);
 					magBitsLeft = 0;
 				}
 			}
-
-
 			while(precBitsLeft != 0) {
 				if(precBitsLeft >= 8) { //Precision is the whole byte
-					printf("val is %u\n", values[i].data[ci]);
 					afterDp = afterDp | values[i].data[ci];
-					printf("val2 is %u\n", afterDp);
 					precBitsLeft = precBitsLeft - 8;
 				} else { //Precision is on RHS and part on LHS is to be ignored
-					afterDp = ((uint32_t) pow(2, precBits)-1) & values[i].data[ci];// << (precBitsLeft - (precBitsLeft%8));
-					//printf("before %u after %u dividor is %d res is %f %f\n",beforeDp, afterDp, divider, (float) afterDp/divider);
+					afterDp = ((uint32_t) pow(2, precBits)-1) & values[i].data[ci];
 					ci--;
 					precBitsLeft = 0;
 				}
 			}
 		}
-
-		//float part1 = afterDp / (float) divider;
-		//float part2 = part1 + (float) beforeDp;
-	//	printf("%.10f %.10f %.10f %.10f\n\n", part1, (float) beforeDp, part2, ((float) beforeDp) + part1);
-		//uncompressed[i] = signMultiplier * part2;
-		//float afterVal = ((float) afterDp) / divider;
-		//uncompressed[i] = signMultiplier * (beforeDp + afterVal);
-		//printf("just before %f\n", (beforeDp + ((float) afterDp) / divider));
-		printf("div is %d before is %u after is %u", divider, beforeDp, afterDp);
 		uncompressed[i] = signMultiplier * (beforeDp + ((float) afterDp) / divider);
+	}
+	return uncompressed;
+}
+
+//newcount is number of bytes used for new rep, total actual size can be found using mag+prec+1*count
+unsigned char *getVariableBitCompressedData(float *uncompressedData, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits) {
+	unsigned int ci = (int) ceil(((count*(1+magBits+precBits))/(float)8))-1;
+	*newCount = ci+1;
+	unsigned char *compressedData = calloc(ci+1, sizeof(unsigned char));
+	int j;
+	unsigned int space = 8;
+	unsigned int target = 1;
+	struct floatSplitValue value;
+	unsigned int multiplier;
+
+	if(numDigits(precBits) == 1) {
+		multiplier = 10;
+	} else {
+		multiplier = pow(10, numDigits(precBits)); //max number of digits that can be represented by a precBits number
+	}
+	unsigned int uci = 0;
+	int i;
+	for(i = 0; i < count; i++) {
+		target = 1;
+		value = splitFloat(uncompressedData[i], multiplier);
+		if(uncompressedData[i] < 0) { //need to deal with -ve sign
+			compressedData[ci] = compressedData[ci] | (1 << (space-target));
+		}
+		space--;
+		if(space==0) { //move onto next compressed byte if we have to
+			ci--;
+			space = 8;
+		} //space 3
+		if(magBits >= 17) { //magnitude is in 3 bytes
+			uci = 2;
+			target = magBits-16;
+		} else if(magBits >=9) { //magnitude in 2 bytes
+			uci = 1;
+			target = magBits-8;
+		} else { //magnitude only in 1
+			uci = 0; //uci becomes 0
+			target = magBits; //target becomes 4
+		}
+		while(target != 0 && uci >= 0) { //deal with magnitude bits
+			if(space >= target) { //If we can fit target into current compressed byte
+				compressedData[ci] = compressedData[ci] | (value.beforeDecimal[uci] << (space-target));
+				space = space - target;
+				if(space == 0) {
+					ci--;
+					space = 8;
+				}
+				if(uci > 0) { //if not on last byte then move further down
+					uci--;
+					target = 8;
+				} else {
+					uci--;
+					target = 0;
+				}
+			} else { //trying to deal with more bits than space
+				compressedData[ci] = compressedData[ci] | (value.beforeDecimal[uci] >> (target-space)); 
+				ci--;
+				target = target - space;
+				space = 8;
+			}
+		}
+		if(precBits >= 17) { //magnitude is in 3 bytes
+			uci = 2;
+			target = precBits-16;
+		} else if(precBits >=9) { //magnitude in 2 bytes
+			uci = 1;
+			target = precBits-8;
+		} else { //magnitude only in 1
+			uci = 0;
+			target = precBits;
+		}
+		while(target != 0 && uci >= 0) { //deal with magnitude bits
+			if(space >= target) { //If we can fit target into current compressed byte
+				compressedData[ci] = compressedData[ci] | (value.afterDecimal[uci] << (space-target));
+				space = space - target;
+				if(space == 0) {
+					ci--;
+					space = 8;
+				}
+				if(uci > 0) { //if not on last byte then move further down
+					uci--;
+					target = 8;
+				} else {
+					uci--;
+					target = 0;
+				}
+			} else { //trying to deal with more bits than space
+				compressedData[ci] = compressedData[ci] | (value.afterDecimal[uci] >> (target-space));
+				ci--;
+				target = target - space;
+				space = 8;
+			}
+		}
+	}
+	return compressedData;
+}
+
+//count = number of bytes occupied, newCount = number of values in returned array
+float *getVariableBitDecompressedData(unsigned char *values, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits) {
+	float *uncompressed = calloc(count, sizeof(float));
+	unsigned int uci = 0; //uncompressedindex (for storing uncomp values)
+	unsigned int divider;
+	if(numDigits(precBits) == 1) {
+		divider = 10;
+	} else {
+		divider = pow(10, numDigits(precBits)-1);
+	}
+	divider = divider*10;
+	//printf("divider is %d\n", divider);
+	unsigned int beforeDp;// = 0;
+	unsigned int afterDp;// = 0;
+	int i, signMultiplier;
+	unsigned int ci = count-1; //compressed index
+	unsigned int index = 8;
+	unsigned int target; //how many target bits
+
+	unsigned int uncompBits = 8; //uncompressedbits
+
+
+	//check we've not decompd enoguh nums
+	//while(ci >= 0 && uci != ceil((8*count)*(1+magBits+precBits))-1) {
+	
+	unsigned int uncompLimit =  (uint32_t) (ceil((8*count)/(1+magBits+precBits)));
+	//printf("lim check is %d\n", uncompLimit);
+	while(uci != uncompLimit) {
+	//while(ci >= 0) {
+	//	printf("decompressing comp index %d\n", ci);
+	//	printf("current byte value is %u\n", values[ci]);
+		beforeDp = 0;
+		afterDp = 0;
+		target = 1;
+		if(((values[ci] >> (uncompBits-target)) & (uint32_t) pow(2,target)-1) == 1) { //extract sign bit
+		//	printf("sign -1\n");
+			signMultiplier = -1;
+		} else {
+		//	printf("sign 1\n");
+			signMultiplier = 1;
+		}
+
+		uncompBits--;
+
+		if(uncompBits == 0) { //if we run out of space, move onto next byte
+		//	printf("dec\n");
+			ci--;
+			uncompBits = 8;
+		}
+		//printf("uncomp is %d\n", uncompBits);
+		target = magBits; //extract magnitude
+		while(target != 0) {
+		//	printf("looking to decomp %d mag bits\n", target);
+			if(target > uncompBits) { //trying to extract more bits than available in current byte
+				//find out the number of useful bits we have (it'll be on RHS) AND to get it then move on
+				beforeDp = beforeDp | (((values[ci]) & (uint32_t) pow(2, uncompBits)-1) << (target-uncompBits));
+			//	printf("before dp is %u\n", beforeDp);
+				ci--;
+
+			//	printf("dec2\n");	
+				target = target - uncompBits;
+				uncompBits = 8;
+			} else { //got what we want in the current byte
+				beforeDp =  beforeDp | ((values[ci] >> (uncompBits-target) & (uint32_t) pow(2, target)-1));
+			//	printf("before dp is %u\n", beforeDp);
+				uncompBits = uncompBits - target;
+				target = 0;
+				if(uncompBits == 0) {
+					ci--;
+			//		printf("dec1 val is %d\n", ci);
+					
+					uncompBits = 8;
+				}
+			}
+		}
+		//printf("MAG DECOMPRED IS %d\n", beforeDp);
+		target = precBits;
+		while(target != 0) {
+			//printf("looking to decomp %d prec bits\n", target);
+			if(target > uncompBits) { //trying to extract more bits than available in current byte
+			//	printf("target %d > index %d\n", target, uncompBits);
+				//printf("byte val is %u\n", values[ci]);
+				//find out the number of useful bits we have (it'll be on RHS) AND to get it then move on
+				afterDp = (afterDp | ((values[ci]) & (uint32_t) pow(2, uncompBits)-1)) << (target-uncompBits);
+				//printf("taking val %u and with %d then shift %d\n", values[ci], (uint32_t) pow(2,index)-1, target-index);
+				//printf("current byte val after shift is %d\n", afterDp);
+			//	printf("ci dec4\n");
+				ci--;
+				//printf("dec4 val is now %d\n", ci);
+				target = target - uncompBits;
+				uncompBits = 8;
+			} else { //got what we want in the current byte
+				//printf("target %d < index %d\n", target, uncompBits);
+				afterDp = afterDp | ((((values[ci] >> (uncompBits-target)) & (uint32_t) pow(2, target)-1)));
+				uncompBits = uncompBits - target;
+				target = 0;
+				if(uncompBits == 0) {
+					//printf("dec");
+					ci--;
+					uncompBits = 8;
+				}
+			}
+		}
+		//printf("ending state ci is %d\n", ci);
+		//printf("PREC DECOMPRED IS %d\n", afterDp);
+		//printf("Before combining %u %f\n", beforeDp, ((float) afterDp) / divider);
+		//printf("Looking to store %f\n\n\n\n", signMultiplier * (beforeDp + ((float) afterDp) / divider));
+		uncompressed[uci] = signMultiplier * (beforeDp + ((float) afterDp) / divider);
+		uci++;
 	}
 	return uncompressed;
 }

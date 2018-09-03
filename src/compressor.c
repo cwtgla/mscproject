@@ -10,8 +10,9 @@
 
 //struct to represent basic file stats
 struct fileStats {
-	int uncompressedCount;
-	int runlengthCount;
+	unsigned int uncompressedCount;
+	unsigned int runlengthCount;
+	unsigned int variableCount;
 	long unsigned int runlengthSize;
 	long unsigned int zfpSize;
 	long unsigned int size24;
@@ -97,24 +98,33 @@ void transform(float *content) {
 		float **datasets = malloc(numFiles*sizeof(float *));
 
 		for(i = 0; i < numFiles; i++) {
-			struct fileStats entry = { .maxVal = 0.0, .minVal = 0.0, .avgVal = 0.0, .uncompressedCount = 0, .runlengthCount = 0, .size24 = 0, .zfpSize = 0, .runlengthSize = 0};
+			struct fileStats entry = { .maxVal = 0.0, .minVal = 0.0, .avgVal = 0.0, .variableCount = 0, .uncompressedCount = 0, .runlengthCount = 0, .size24 = 0, .zfpSize = 0, .runlengthSize = 0};
 			stats[i] = entry;
 			datasets[i] = getData(files[i], &stats[i].uncompressedCount, &stats[i].maxVal, &stats[i].minVal, &stats[i].avgVal);
 			printf("Basic stats for file: %s\nNumber of values: %d, Max value: %f, Min value: %f, Average value: %f\n", files[i], stats[i].uncompressedCount, stats[i].maxVal, stats[i].minVal, stats[i].avgVal);
 			stats[i].runlengthSize = stats[i].uncompressedCount * sizeof(float);
 			printf("\tUncompressed size: %lu bytes\n", stats[i].runlengthSize);
+			//runlength compression
 			printf("Stats after runlength compression\n");
 			struct runlengthEntry *runlengthCompressed = getRunlengthCompressedData(datasets[i], stats[i].uncompressedCount, &stats[i].runlengthCount);
+			free(runlengthCompressed);
 			printf("\tNumber of runlength entries: %d, Runlength compressed size: %lu bytes\n", stats[i].runlengthCount, stats[i].runlengthCount * sizeof(struct runlengthEntry));
+			//zfp compression
 			printf("Stats after ZFP compression\n");
 			stats[i].zfpSize = zfpCompress(datasets[i], 150, 150, 90, 0.00, 0);
 			printf("\tZFP compressed size: %lu bytes\n", stats[i].zfpSize);
+			//24 bit compression
 			printf("Stats after 24 bit compression\n");
 			struct compressedVal *compressed24 = get24BitCompressedData(datasets[i], stats[i].uncompressedCount, 5, 18);
-			printf("24 Bit compressed size: %lu bytes\n", sizeof(struct compressedVal) * stats[i].uncompressedCount);
-			printf("Stats for non byte aligned compression\n\n");
+			free(compressed24);
+			printf("\t24 Bit compressed size: %lu bytes\n", sizeof(struct compressedVal) * stats[i].uncompressedCount);
+			printf("Stats for non byte aligned compression\n");
 			//do non byte aligned compression
+			unsigned char *varCompressed = getVariableBitCompressedData(datasets[i], stats[i].uncompressedCount, &stats[i].variableCount, 5, 16);
+			printf("\t5 Mag 16 Precision compressed size: %lu\n\n\n", sizeof(unsigned char) * stats[i].variableCount);
+			free(varCompressed);
 		}
-		transform(datasets[0]);
+		//transform(datasets[0]);
 		return 0;
 	}
+//float *getVariableBitDecompressedData(unsigned char *values, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits);

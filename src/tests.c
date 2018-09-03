@@ -9,7 +9,6 @@
 #include <math.h>
 
 int tests_run = 0;
-//char *homedir = getenv("HOME");
 
 /*
  * Purpose:
@@ -146,6 +145,9 @@ static char *testGet24BitCompressedData() {
 	int i;
 	int j = 0;
 	for(i = 0; i < uncompressedCount; i++) {
+		// printf("%u %u\n", compressedData[i].data[2], expectedData[j++]);
+		// printf("%u %u\n", compressedData[i].data[1], expectedData[j++]);
+		// printf("%u %u\n", compressedData[i].data[0], expectedData[j++]);
 		mu_assert("Error in test24BitRateCompression (1-5-18): compressed bytes dont match expected", compressedData[i].data[2] == expectedData[j++]);
 		mu_assert("Error in test24BitRateCompression (1-5-18): compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
 		mu_assert("Error in test24BitRateCompression (1-5-18): compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
@@ -239,7 +241,8 @@ static char *testGet24BitDecompressedData() {
 	float *decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 5, 18);
 	int i;
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", pow(10,numDigits(18)) > fabs(uncompressedData[i] - decompressedData[i]));
+		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		//mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", 1/pow(10,numDigits(18)-1) > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
 	//tests for 1-7-16 dataset
@@ -249,7 +252,8 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 7, 16);
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateDecompression (1-7-16): compressed bytes dont match expected", pow(10,numDigits(16)) > fabs(uncompressedData[i] - decompressedData[i]));
+		mu_assert("Error in test24BitRateDecompression (1-7-16): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		//mu_assert("Error in test24BitRateDecompression (1-7-16): compressed bytes dont match expected", 1/pow(10,numDigits(16)-1) > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
 	//tests for 1-13-10 dataset
@@ -259,7 +263,9 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 13, 10);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 13, 10);
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateDecompression (1-13-10): compressed bytes dont match expected", pow(10,numDigits(10)) > fabs(uncompressedData[i] - decompressedData[i]));
+		//printf("%f %f\n", uncompressedData[i], decompressedData[i]);
+		//mu_assert("Error in test24BitRateDecompression (1-13-10): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		mu_assert("Error in test24BitRateDecompression (1-13-10): compressed bytes dont match expected", 0.25 > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
 	//tests for 1-20-3 dataset
@@ -269,7 +275,9 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 20, 3);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 20, 3);
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateDecompression (1-20-3): compressed bytes dont match expected", pow(10,numDigits(3)) > fabs(uncompressedData[i] - decompressedData[i]));
+		//printf("%f %f\n", uncompressedData[i], decompressedData[i]);
+		//mu_assert("Error in test24BitRateDecompression (1-20-3): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		mu_assert("Error in test24BitRateDecompression (1-20-3): compressed bytes dont match expected", 1/pow(10,numDigits(3)-1) > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
 	//tests for 1-15-8 dataset
@@ -279,14 +287,149 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 15, 8);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 15, 8);
 	for(i = 0; i < uncompressedCount; i++) {
-		printf("val1 %f val2 %f\n", uncompressedData[i], decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-15-8): compressed bytes dont match expected", pow(10,numDigits(8)) > fabs(uncompressedData[i] - decompressedData[i]));
+		//printf("%f %f\n", uncompressedData[i], decompressedData[i]);
+		//mu_assert("Error in test24BitRateDecompression (1-15-8): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		mu_assert("Error in test24BitRateDecompression (1-15-8): compressed bytes dont match expected", 1/pow(10,numDigits(8)-1) > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
 	return 0;
 }
 
+/*
+ * Purpose:
+ *		Test that the variable bit compression compresses as expected by comparing the values of the compressed bytes to expected values (done by hand)
+ */
+static char *testGetVariableBitCompressedData() {
+	//4 mag 7 prec dataset
+	//Grab data from file, compress it
+	char *testDataset = "../data/test_datasets/non_aligned/5lines_4mag_7prec.txt";
+	int uncompressedCount = 0;
+	float junk = 0.0;
+	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	unsigned int compressedCount = 0;
+	unsigned char *compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 4, 7);
+	char *testCompressedVals = "../data/test_datasets/non_aligned/5lines_4mag_7prec_expected.txt";
+	int expectedCount = 0;
+	unsigned int *expectedData = getVerificationData(testCompressedVals, &expectedCount);
+	int j = 0;
+	int i;
+
+	for(i = compressedCount-1; i >= 0; i--) {
+		mu_assert("Error in testGet24BitDecompressedData (1-4-7): compressed bytes dont match expected", compressedData[i] == expectedData[j++]);
+	}
+
+	//tests for 1-5-10 dataset
+	testDataset = "../data/test_datasets/non_aligned/5lines_5mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 5, 10);
+	testCompressedVals = "../data/test_datasets/non_aligned/5lines_5mag_10prec_expected.txt";
+	expectedData = getVerificationData(testCompressedVals, &expectedCount);
+	j = 0;
+
+	for(i = compressedCount-1; i >= 0; i--) {
+		mu_assert("Error in testGet24BitDecompressedData (1-5-10): compressed bytes dont match expected", compressedData[i] == expectedData[j++]);
+	}
+
+	//tests for 1-7-12 dataset
+	testDataset = "../data/test_datasets/non_aligned/5lines_7mag_12prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 7, 12);
+	testCompressedVals = "../data/test_datasets/non_aligned/5lines_7mag_12prec_expected.txt";
+	expectedData = getVerificationData(testCompressedVals, &expectedCount);
+	j = 0;
+
+	for(i = compressedCount-1; i >= 0; i--) {
+		mu_assert("Error in testGet24BitDecompressedData (1-7-12): compressed bytes dont match expected", compressedData[i] == expectedData[j++]);
+	}
+
+	//tests for 1-11-10 dataset
+	testDataset = "../data/test_datasets/non_aligned/5lines_11mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 11, 10);
+	testCompressedVals = "../data/test_datasets/non_aligned/5lines_11mag_10prec_expected.txt";
+	expectedData = getVerificationData(testCompressedVals, &expectedCount);
+	j = 0;
+
+	for(i = compressedCount-1; i >= 0; i--) {
+		mu_assert("Error in testGet24BitDecompressedData (1-11-10): compressed bytes dont match expected", compressedData[i] == expectedData[j++]);
+	}
+	return 0;
+}
  
+/*
+ * Purpose:
+ *		Test that the variable bit compression values before compression and after decompression are roughly the same
+ */
+static char *testGetVariableDecompressedData() {
+	//tests for 1-7-12 dataset
+	char *testDataset = "../data/test_datasets/non_aligned/5lines_7mag_12prec.txt";
+	int uncompressedCount = 0;
+	float junk = 0.0;
+	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	int i;
+	int compressedCount = 0;
+	unsigned char *compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 7, 12);
+	printf("comp bytes count %d\n", compressedCount);
+	int decompressedCount = 0;
+	float *decompressedData = getVariableBitDecompressedData(compressedData, compressedCount, &decompressedCount, 7, 12);
+
+	for(i = 0; i < uncompressedCount; i++) {
+		//printf("before %.10f after %.10f\n", uncompressedData[i], decompressedData[i]);
+		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+	}
+
+	//tests for 1-5-10 dataset
+	testDataset = "../data/test_datasets/non_aligned/5lines_5mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 5, 10);
+	//printf("comp bytes count %d\n", compressedCount);
+	decompressedCount = 0;
+	decompressedData = getVariableBitDecompressedData(compressedData, compressedCount, &decompressedCount, 5, 10);
+
+	for(i = 0; i < uncompressedCount; i++) {
+		//printf("before %.10f after %.10f\n", uncompressedData[i], decompressedData[i]);
+		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+	}
+
+	//tests for 1-4-7 dataset
+	testDataset = "../data/test_datasets/non_aligned/5lines_4mag_7prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 4, 7);
+	//printf("comp bytes count %d\n", compressedCount);
+	decompressedCount = 0;
+	decompressedData = getVariableBitDecompressedData(compressedData, compressedCount, &decompressedCount, 4, 7);
+
+	for(i = 0; i < uncompressedCount; i++) {
+		//printf("before %.10f after %.10f\n", uncompressedData[i], decompressedData[i]);
+		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+	}
+
+	//tests for 1-11-10 dataset
+	testDataset = "../data/test_datasets/non_aligned/5lines_11mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 11, 10);
+	//printf("comp bytes count %d\n", compressedCount);
+	decompressedCount = 0;
+	decompressedData = getVariableBitDecompressedData(compressedData, compressedCount, &decompressedCount, 11, 10);
+
+	for(i = 0; i < uncompressedCount; i++) {
+		//printf("before %.10f after %.10f\n", uncompressedData[i], decompressedData[i]);
+		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+	}
+
+
+	return 0;
+}
+
 static char *all_tests() {
 	mu_run_test(testGetAbsoluteFilepaths);
 	mu_run_test(testGetData);
@@ -294,6 +437,8 @@ static char *all_tests() {
 	mu_run_test(testGetRunlengthDecompressedData);
 	mu_run_test(testGet24BitCompressedData);
 	mu_run_test(testGet24BitDecompressedData);
+	mu_run_test(testGetVariableBitCompressedData);
+	mu_run_test(testGetVariableDecompressedData);
 	return 0;
 }
  

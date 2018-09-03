@@ -2,10 +2,11 @@ running things
 
 gcc -c -Wall complete_compressor.c
 gcc -Wall tests.c complete_compressor.o -lm -o tests.exe
-gcc compressor.c complete_compressor.o zfp_example.o -L/home/crags/Documents/zfp/lib -lzfp -lm -o run.exe
-
-
 gcc -c -I/home/crags/Documents/zfp/include -L/home/crags/Documents/zfp/lib -lzfp zfp_example.c
+gcc compressor.c complete_compressor.o zfp_example.o -L/home/crags/Documents/zfp/lib -lzfp -lm -o example.exe
+
+
+
 gcc compressor.c complete_compressor.o -lm -o compressor.exe
 
 
