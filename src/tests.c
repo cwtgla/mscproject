@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "minunit.h"
-#include "complete_compressor.h"
+#include "compressor.h"
 #include <math.h>
 
 int tests_run = 0;
@@ -14,21 +14,20 @@ int tests_run = 0;
  * Purpose:
  * 		Test to confirm that getAbsoluteFilepaths() works as expected (produces correct number of files)
  */
-static char *testGetAbsoluteFilepaths() {
+MU_TEST(testGetAbsoluteFilepaths) {
 	char *directory = "../data/test_datasets/getdata/";
 	char *files[100];
 	int fileCount;
 
 	getAbsoluteFilepaths(files, directory, ".txt", &fileCount);
-	mu_assert("ERROR in testGetAbsoluteFilepaths: incorrect number of files found", fileCount == 2);
-	return 0;
+	mu_assert(fileCount == 2, "ERROR in testGetAbsoluteFilepaths: incorrect number of files found");
 }
 
 /*
  * Purpose:
  * 		Test to confirm that getData() is returning the expected amount of data and no lines are missed
  */
-static char *testGetData() {
+MU_TEST(testGetData) {
 	char *file1 = "../data/test_datasets/getdata/100lines.txt";
 	char *file2 = "../data/test_datasets/getdata/0lines.txt";
 	int lineCount1 = 0;
@@ -36,100 +35,94 @@ static char *testGetData() {
 	float junk = 0.0;
 
 	float *contents1 = getData(file1, &lineCount1, &junk, &junk, &junk);
-	mu_assert("ERROR in testGetData: expected number of entries hasn't been retrieved (100)", lineCount1 == 100);
+	mu_assert(lineCount1 == 100, "ERROR in testGetData: expected number of entries hasn't been retrieved (100)");
 	float *contents2 = getData(file2, &lineCount2, &junk, &junk, &junk);
-	mu_assert("ERROR in testGetData: expected number of entries hasn't been retrieved (0)", lineCount2 == 0);
+	mu_assert(lineCount2 == 0, "ERROR in testGetData: expected number of entries hasn't been retrieved (0)");
 	free(contents1);
 	free(contents2);
-
-	return 0;
 }
 
 /*
  * Purpose:
- *		Test that the runlengthCompression() method correctly performs the compression ratio expected on custom datasets
+ *		Test that the getRunlengthCompressedData() method correctly produces the compression ratio expected on custom datasets
  */
-static char *testGetRunlengthCompressedData() {
+MU_TEST(testGetRunlengthCompressedData) {
 	//dataset for a situation where there's no improvement in compression
-	char *file1 = "../data/test_datasets/runlength/runlength_0_compression.txt";
+	char *file = "../data/test_datasets/runlength/runlength_0_compression.txt";
 	int uncompressedCount = 0;
 	float junk = 0.0;
-	float *uncompressedData = getData(file1, &uncompressedCount, &junk, &junk, &junk);
+	float *uncompressedData = getData(file, &uncompressedCount, &junk, &junk, &junk);
 	int compressedCount = 0;
 	struct runlengthEntry *compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
-	mu_assert("ERROR in testRunlengthCompression: 0 compression example isn't working as expected", uncompressedCount == compressedCount);
+	mu_assert(uncompressedCount == compressedCount, "ERROR in testGetRunlengthCompressedData: 0 compression example isn't working as expected");
 	free(uncompressedData);
 	free(compressedData);
 
 	//dataset for a situation where the number of data entries can be halved
-	char *file2 = "../data/test_datasets/runlength/runlength_50_compression.txt";
+	file = "../data/test_datasets/runlength/runlength_50_compression.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(file2, &uncompressedCount, &junk, &junk, &junk);
+	uncompressedData = getData(file, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
-	mu_assert("Error in testRunlengthCompression: 50% compression example isn't working as expected", compressedCount == (uncompressedCount/2));
+	mu_assert(compressedCount == (uncompressedCount/2), "ERROR in testGetRunlengthCompressedData: 50% compression example isn't working as expected");
 	free(uncompressedData);
 	free(compressedData);
 
 	//dataset for a situation where there's all data can be compressed into 1 entry
-	char *file3 = "../data/test_datasets/runlength/runlength_100_compression.txt";
+	file = "../data/test_datasets/runlength/runlength_100_compression.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(file3, &uncompressedCount, &junk, &junk, &junk);
+	uncompressedData = getData(file, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
-	mu_assert("Error in testRunlengthCompression: 100% compression example isn't working as expected", compressedCount == 1);
+	mu_assert(compressedCount == 1, "ERROR in testGetRunlengthCompressedData: 100% compression example isn't working as expected");
 	free(uncompressedData);
 	free(compressedData);
-
-	return 0;
 }
 
 /*
  * Purpose:
- *		Test that the runlengthDecompression() method decompresses and recreates original data as expected
+ *		Test that the getRunlengthDecompressedData() method decompresses and recreates original data as expected
  */
-static char *testGetRunlengthDecompressedData() {
-	//dataset for a situation where there's all data can be compressed into 1 entry
-	char *file1 = "../data/test_datasets/runlength/runlength_100_compression.txt";
+MU_TEST(testGetRunlengthDecompressedData) {
+	//dataset for a situation where all data can be compressed into 1 entry
+	char *file = "../data/test_datasets/runlength/runlength_100_compression.txt";
 	int uncompressedCount = 0;
 	float junk = 0.0;
-	float *uncompressedData = getData(file1, &uncompressedCount, &junk, &junk, &junk);
+	float *uncompressedData = getData(file, &uncompressedCount, &junk, &junk, &junk);
 	int compressedCount = 0;
 	struct runlengthEntry *compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
 	int decompressedCount = 0;
 	float *decompressedData = getRunlengthDecompressedData(compressedData, compressedCount, &decompressedCount);
-	mu_assert("Error in testRunlengthDecompression: before compression and decompressed size arent the same (100%)", uncompressedCount == decompressedCount);
+	mu_assert(uncompressedCount == decompressedCount,"ERROR in testGetRunlengthDecompressedData: before compression and decompressed size arent the same (100%)");
 	int i;
 	for(i = 0; i < decompressedCount; i++) {
-		mu_assert("Error in testRunlengthDecompression: before and after elements mismatch", uncompressedData[i]==decompressedData[i]);
+		mu_assert(uncompressedData[i]==decompressedData[i], "ERROR in testGetRunlengthDecompressedData: before and after elements mismatch");
 	}
 	free(uncompressedData);
 	free(compressedData);
 
-	//dataset for a situation where there's all data can be compressed into 1 entry
-	char *file2 = "../data/test_datasets/runlength/runlength_50_compression.txt";
+	//dataset for a situation where number of entries can be halved
+	file = "../data/test_datasets/runlength/runlength_50_compression.txt";
 	uncompressedCount = 0;
-	uncompressedData = getData(file2, &uncompressedCount, &junk, &junk, &junk);
+	uncompressedData = getData(file, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getRunlengthCompressedData(uncompressedData, uncompressedCount, &compressedCount);
 	decompressedCount = 0;
 	decompressedData = getRunlengthDecompressedData(compressedData, compressedCount, &decompressedCount);
-	mu_assert("Error in testRunlengthDecompression: before compression and decompressed size arent the same (50%)", uncompressedCount == decompressedCount);
+	mu_assert(uncompressedCount == decompressedCount,"ERROR in testGetRunlengthDecompressedData: before compression and decompressed size arent the same (50%)");
 
 	for(i = 0; i < decompressedCount; i++) {
-		mu_assert("Error in testRunlengthDecompression: before and after elements mismatch", uncompressedData[i]==decompressedData[i]);
+		mu_assert(uncompressedData[i]==decompressedData[i], "ERROR in testGetRunlengthDecompressedData: before and after elements mismatch");
 	}
 	free(uncompressedData);
 	free(compressedData);
-
-	return 0;
 }
 
 /*
  * Purpose:
  *		Test that the fixed 24 bit compression compresses as expected by comparing the values of the compressed bytes to expected values (done by hand)
  */
-static char *testGet24BitCompressedData() {
+MU_TEST(testGet24BitCompressedData) {
 	//5 mag 18 prec dataset
 	//Grab data from file, compress it
 	char *testDataset = "../data/test_datasets/24bit/5lines_5mag_18prec.txt";
@@ -148,10 +141,12 @@ static char *testGet24BitCompressedData() {
 		// printf("%u %u\n", compressedData[i].data[2], expectedData[j++]);
 		// printf("%u %u\n", compressedData[i].data[1], expectedData[j++]);
 		// printf("%u %u\n", compressedData[i].data[0], expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-5-18): compressed bytes dont match expected", compressedData[i].data[2] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-5-18): compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-5-18): compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
+		mu_assert(compressedData[i].data[2] == expectedData[j++], "ERROR in test24BitRateCompression (1-5-18): compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[1] == expectedData[j++], "ERROR in test24BitRateCompression (1-5-18): compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[0] == expectedData[j++], "ERROR in test24BitRateCompression (1-5-18): compressed bytes dont match expected");
 	}
+	free(compressedData);
+	free(uncompressedData);
 
 	//7 mag 16 prec dataset
 	//Grab data from file, compress it
@@ -166,10 +161,12 @@ static char *testGet24BitCompressedData() {
 	j = 0;
 
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateCompression (1-7-16): compressed bytes dont match expected", compressedData[i].data[2] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-7-16): compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-7-16): compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
+		mu_assert(compressedData[i].data[2] == expectedData[j++], "ERROR in test24BitRateCompression (1-7-16): compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[1] == expectedData[j++], "ERROR in test24BitRateCompression (1-7-16): compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[0] == expectedData[j++], "ERROR in test24BitRateCompression (1-7-16): compressed bytes dont match expected");
 	}
+	free(compressedData);
+	free(uncompressedData);
 
 	//13 mag 10 prec dataset
 	//Grab data from file, compress it
@@ -184,10 +181,12 @@ static char *testGet24BitCompressedData() {
 	j = 0;
 
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateCompression (1-13-10): compressed bytes dont match expected", compressedData[i].data[2] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-13-10): compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-13-10): compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
+		mu_assert(compressedData[i].data[2] == expectedData[j++], "ERROR in test24BitRateCompression (1-13-10): compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[1] == expectedData[j++], "ERROR in test24BitRateCompression (1-13-10): compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[0] == expectedData[j++], "ERROR in test24BitRateCompression (1-13-10): compressed bytes dont match expected");
 	}
+	free(compressedData);
+	free(uncompressedData);
 
 	//20 mag 3 prec dataset
 	//Grab data from file, compress it
@@ -202,10 +201,12 @@ static char *testGet24BitCompressedData() {
 	j = 0;
 
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateCompression (1-20-3): compressed bytes dont match expected", compressedData[i].data[2] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-20-3): compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-20-3) compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
+		mu_assert(compressedData[i].data[2] == expectedData[j++], "ERROR in test24BitRateCompression (1-20-3): compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[1] == expectedData[j++], "ERROR in test24BitRateCompression (1-20-3): compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[0] == expectedData[j++], "ERROR in test24BitRateCompression (1-20-3) compressed bytes dont match expected");
 	}
+	free(compressedData);
+	free(uncompressedData);
 
 	//15 mag 8 prec dataset
 	//Grab data from file, compress it
@@ -220,18 +221,19 @@ static char *testGet24BitCompressedData() {
 	j = 0;
 
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateCompression (1-15-8): compressed bytes dont match expected", compressedData[i].data[2] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-15-8): compressed bytes dont match expected", compressedData[i].data[1] == expectedData[j++]);
-		mu_assert("Error in test24BitRateCompression (1-15-8) compressed bytes dont match expected", compressedData[i].data[0] == expectedData[j++]);
+		mu_assert(compressedData[i].data[2] == expectedData[j++], "ERROR in test24BitRateCompression (1-15-8) compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[1] == expectedData[j++], "ERROR in test24BitRateCompression (1-15-8) compressed bytes dont match expected");
+		mu_assert(compressedData[i].data[0] == expectedData[j++], "ERROR in test24BitRateCompression (1-15-8) compressed bytes dont match expected");
 	}
-	return 0;
+	free(compressedData);
+	free(uncompressedData);
 }
 
 /*
  * Purpose:
  *		Test that the fixed 24 bit compression values before compression and after decompression are roughly the same
  */
-static char *testGet24BitDecompressedData() {
+MU_TEST(testGet24BitDecompressedData) {
 	//tests for 1-5-18 dataset
 	char *testDataset = "../data/test_datasets/24bit/5lines_5mag_18prec.txt";
 	int uncompressedCount = 0;
@@ -241,7 +243,7 @@ static char *testGet24BitDecompressedData() {
 	float *decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 5, 18);
 	int i;
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		mu_assert(uncompressedData[i] == decompressedData[i], "ERROR in test24BitRateDecompression (1-5-18): compressed bytes dont match expected");
 		//mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", 1/pow(10,numDigits(18)-1) > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
@@ -252,7 +254,7 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 7, 16);
 	for(i = 0; i < uncompressedCount; i++) {
-		mu_assert("Error in test24BitRateDecompression (1-7-16): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		mu_assert(uncompressedData[i] == decompressedData[i], "ERROR in test24BitRateDecompression (1-7-16): compressed bytes dont match expected");
 		//mu_assert("Error in test24BitRateDecompression (1-7-16): compressed bytes dont match expected", 1/pow(10,numDigits(16)-1) > fabs(uncompressedData[i] - decompressedData[i]));
 	}
 
@@ -263,9 +265,7 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 13, 10);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 13, 10);
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("%f %f\n", uncompressedData[i], decompressedData[i]);
-		//mu_assert("Error in test24BitRateDecompression (1-13-10): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-13-10): compressed bytes dont match expected", 0.25 > fabs(uncompressedData[i] - decompressedData[i]));
+		mu_assert(0.25 > fabs(uncompressedData[i] - decompressedData[i]), "ERROR in test24BitRateDecompression (1-13-10): compressed bytes dont match expected");
 	}
 
 	//tests for 1-20-3 dataset
@@ -275,9 +275,7 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 20, 3);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 20, 3);
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("%f %f\n", uncompressedData[i], decompressedData[i]);
-		//mu_assert("Error in test24BitRateDecompression (1-20-3): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-20-3): compressed bytes dont match expected", 1/pow(10,numDigits(3)-1) > fabs(uncompressedData[i] - decompressedData[i]));
+		mu_assert(1/pow(10,numDigits(3)-1) > fabs(uncompressedData[i] - decompressedData[i]), "ERROR in test24BitRateDecompression (1-20-3): compressed bytes dont match expected");
 	}
 
 	//tests for 1-15-8 dataset
@@ -287,19 +285,158 @@ static char *testGet24BitDecompressedData() {
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 15, 8);
 	decompressedData = get24BitDecompressedData(compressedData, uncompressedCount, 15, 8);
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("%f %f\n", uncompressedData[i], decompressedData[i]);
-		//mu_assert("Error in test24BitRateDecompression (1-15-8): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-15-8): compressed bytes dont match expected", 1/pow(10,numDigits(8)-1) > fabs(uncompressedData[i] - decompressedData[i]));
+		mu_assert(1/pow(10,numDigits(8)-1) > fabs(uncompressedData[i] - decompressedData[i]), "ERROR in test24BitRateDecompression (1-15-8): compressed bytes dont match expected");
 	}
+}
 
-	return 0;
+/*
+ * Purpose:
+ *		Test that the fixed 24 bit compression values can be individually decompressed to expected value roughly
+ */
+MU_TEST(testSingle24BitDecompress) {
+	//tests for 1-5-18 dataset
+	char *testDataset = "../data/test_datasets/24bit/5lines_5mag_18prec.txt";
+	int uncompressedCount = 0;
+	float junk = 0.0;
+	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	struct compressedVal *compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 5, 18);
+
+	int i;
+	float individualValue = 0;
+	for(i = 0; i < uncompressedCount; i++) {
+		individualValue = get24BitCompressedValue(compressedData, i, 5, 18);
+		mu_assert(uncompressedData[i] == individualValue, "ERROR in testIndividual24BitCompressAndDecompress (1-5-18): Individual decompressed value not working as expected");
+	}
+	free(uncompressedData);
+	free(compressedData);
+
+	//tests for 1-7-16 dataset
+	testDataset = "../data/test_datasets/24bit/5lines_7mag_16prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
+	for(i = 0; i < uncompressedCount; i++) {
+		individualValue = get24BitCompressedValue(compressedData, i, 7, 16);
+		mu_assert(uncompressedData[i] == individualValue, "ERROR in testIndividual24BitCompressAndDecompress (1-7-16): Individual decompressed value not working as expected");
+	}
+	free(uncompressedData);
+	free(compressedData);
+
+	//tests for 1-13-10 dataset
+	testDataset = "../data/test_datasets/24bit/5lines_13mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 13, 10);
+	for(i = 0; i < uncompressedCount; i++) {
+		individualValue = get24BitCompressedValue(compressedData, i, 13, 10);
+		//printf("%f %f\n", uncompressedData[i], individualValue);
+		mu_assert(.25 > fabs(uncompressedData[i] - individualValue), "ERROR in test24BitRateDecompression (1-13-10): compressed bytes dont match expected");
+	}
+	free(uncompressedData);
+	free(compressedData);
+
+	//tests for 1-20-3 dataset
+	testDataset = "../data/test_datasets/24bit/5lines_20mag_3prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 20, 3);
+	for(i = 0; i < uncompressedCount; i++) {
+		individualValue = get24BitCompressedValue(compressedData, i, 20, 3);
+		mu_assert(1/pow(10,numDigits(3)-1) > fabs(uncompressedData[i] - individualValue), "ERROR in testIndividual24BitCompressAndDecompress (1-20-3): Individual decompressed value not working as expected");
+	}
+	free(uncompressedData);
+	free(compressedData);
+
+	//tests for 1-15-8 dataset
+	testDataset = "../data/test_datasets/24bit/5lines_15mag_8prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 15, 8);
+	for(i = 0; i < uncompressedCount; i++) {
+		individualValue = get24BitCompressedValue(compressedData, i, 15, 8);
+		mu_assert(uncompressedData[i] == individualValue, "ERROR in testIndividual24BitCompressAndDecompress (1-15-8): Individual decompressed value not working as expected");
+	}
+	free(uncompressedData);
+	free(compressedData);
+}
+
+/*
+ * Purpose:
+ *		Test that a single fixed 24 bit compression value can be updated successfully. it does this by copying the 0th index float to the 4th index and comparing individual byte values
+ */
+MU_TEST(testSingle24BitCompress) {
+	//5 mag 18 prec dataset
+	//Grab data from file, compress it
+	char *testDataset = "../data/test_datasets/24bit/5lines_5mag_18prec.txt";
+	int uncompressedCount = 0;
+	float junk = 0.0;
+	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	struct compressedVal *compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 5, 18);
+	storeValueAs24Bit(compressedData, 31.15115, 4, 5, 18);
+	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-5-18): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-5-18): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-5-18): Compressing and inserting new values not working as expected");
+	free(uncompressedData);
+	free(compressedData);
+
+	//test for 1-7-16
+	testDataset = "../data/test_datasets/24bit/5lines_7mag_16prec.txt";
+	uncompressedCount = 0;
+	junk = 0.0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
+	storeValueAs24Bit(compressedData, 127.1491, 4, 7, 16);
+	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
+	free(uncompressedData);
+	free(compressedData);
+
+	//test for 1-13-10
+	testDataset = "../data/test_datasets/24bit/5lines_13mag_10prec.txt";
+	uncompressedCount = 0;
+	junk = 0.0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 13, 10);
+	storeValueAs24Bit(compressedData, 8191.131, 4, 13, 10);
+	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-13-10): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-13-10): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-13-10): Compressing and inserting new values not working as expected");
+	free(uncompressedData);
+	free(compressedData);
+
+	//test for 1-15-8
+	testDataset = "../data/test_datasets/24bit/5lines_15mag_8prec.txt";
+	uncompressedCount = 0;
+	junk = 0.0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 15, 8);
+	storeValueAs24Bit(compressedData, 32767.44, 4, 15, 8);
+	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-15-8): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-15-8): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-15-8): Compressing and inserting new values not working as expected");
+	free(uncompressedData);
+	free(compressedData);
+
+	//test for 1-20-3
+	testDataset = "../data/test_datasets/24bit/5lines_7mag_16prec.txt";
+	uncompressedCount = 0;
+	junk = 0.0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
+	storeValueAs24Bit(compressedData, 127.1491, 4, 7, 16);
+	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
+	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
+	free(uncompressedData);
+	free(compressedData);
 }
 
 /*
  * Purpose:
  *		Test that the variable bit compression compresses as expected by comparing the values of the compressed bytes to expected values (done by hand)
  */
-static char *testGetVariableBitCompressedData() {
+MU_TEST(testGetVariableBitCompressedData) {
 	//4 mag 7 prec dataset
 	//Grab data from file, compress it
 	char *testDataset = "../data/test_datasets/non_aligned/5lines_4mag_7prec.txt";
@@ -315,7 +452,7 @@ static char *testGetVariableBitCompressedData() {
 	int i;
 
 	for(i = compressedCount-1; i >= 0; i--) {
-		mu_assert("Error in testGet24BitDecompressedData (1-4-7): compressed bytes dont match expected", compressedData[i] == expectedData[j++]);
+		mu_assert(compressedData[i] == expectedData[j++], "ERROR in testGet24BitDecompressedData (1-4-7): compressed bytes dont match expected");
 	}
 
 	//tests for 1-5-10 dataset
@@ -328,7 +465,7 @@ static char *testGetVariableBitCompressedData() {
 	j = 0;
 
 	for(i = compressedCount-1; i >= 0; i--) {
-		mu_assert("Error in testGet24BitDecompressedData (1-5-10): compressed bytes dont match expected", compressedData[i] == expectedData[j++]);
+		mu_assert(compressedData[i] == expectedData[j++], "ERROR in testGet24BitDecompressedData (1-5-10): compressed bytes dont match expected");
 	}
 
 	//tests for 1-7-12 dataset
@@ -341,7 +478,7 @@ static char *testGetVariableBitCompressedData() {
 	j = 0;
 
 	for(i = compressedCount-1; i >= 0; i--) {
-		mu_assert("Error in testGet24BitDecompressedData (1-7-12): compressed bytes dont match expected", compressedData[i] == expectedData[j++]);
+		mu_assert(compressedData[i] == expectedData[j++], "ERROR in testGet24BitDecompressedData (1-7-12): compressed bytes dont match expected");
 	}
 
 	//tests for 1-11-10 dataset
@@ -354,16 +491,15 @@ static char *testGetVariableBitCompressedData() {
 	j = 0;
 
 	for(i = compressedCount-1; i >= 0; i--) {
-		mu_assert("Error in testGet24BitDecompressedData (1-11-10): compressed bytes dont match expected", compressedData[i] == expectedData[j++]);
+		mu_assert(compressedData[i] == expectedData[j++], "ERROR in testGet24BitDecompressedData (1-11-10): compressed bytes dont match expected");
 	}
-	return 0;
 }
  
 /*
  * Purpose:
  *		Test that the variable bit compression values before compression and after decompression are roughly the same
  */
-static char *testGetVariableDecompressedData() {
+MU_TEST(testGetVariableDecompressedData) {
 	//tests for 1-7-12 dataset
 	char *testDataset = "../data/test_datasets/non_aligned/5lines_7mag_12prec.txt";
 	int uncompressedCount = 0;
@@ -372,13 +508,11 @@ static char *testGetVariableDecompressedData() {
 	int i;
 	int compressedCount = 0;
 	unsigned char *compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 7, 12);
-	printf("comp bytes count %d\n", compressedCount);
 	int decompressedCount = 0;
 	float *decompressedData = getVariableBitDecompressedData(compressedData, compressedCount, &decompressedCount, 7, 12);
-
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("before %.10f after %.10f\n", uncompressedData[i], decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		printf("%f %f \n", uncompressedData[i] ,decompressedData[i]);
+		mu_assert(uncompressedData[i] == decompressedData[i], "ERROR in test24BitRateDecompression (1-5-18): compressed bytes dont match expected");
 	}
 
 	//tests for 1-5-10 dataset
@@ -387,13 +521,10 @@ static char *testGetVariableDecompressedData() {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 5, 10);
-	//printf("comp bytes count %d\n", compressedCount);
 	decompressedCount = 0;
 	decompressedData = getVariableBitDecompressedData(compressedData, compressedCount, &decompressedCount, 5, 10);
-
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("before %.10f after %.10f\n", uncompressedData[i], decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		mu_assert(uncompressedData[i] == decompressedData[i], "ERROR in test24BitRateDecompression (1-5-10): compressed bytes dont match expected");
 	}
 
 	//tests for 1-4-7 dataset
@@ -402,13 +533,10 @@ static char *testGetVariableDecompressedData() {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 4, 7);
-	//printf("comp bytes count %d\n", compressedCount);
 	decompressedCount = 0;
 	decompressedData = getVariableBitDecompressedData(compressedData, compressedCount, &decompressedCount, 4, 7);
-
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("before %.10f after %.10f\n", uncompressedData[i], decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		mu_assert(uncompressedData[i] == decompressedData[i], "ERROR in test24BitRateDecompression (1-4-7): compressed bytes dont match expected");
 	}
 
 	//tests for 1-11-10 dataset
@@ -417,39 +545,143 @@ static char *testGetVariableDecompressedData() {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedCount = 0;
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 11, 10);
-	//printf("comp bytes count %d\n", compressedCount);
 	decompressedCount = 0;
 	decompressedData = getVariableBitDecompressedData(compressedData, compressedCount, &decompressedCount, 11, 10);
-
 	for(i = 0; i < uncompressedCount; i++) {
-		//printf("before %.10f after %.10f\n", uncompressedData[i], decompressedData[i]);
-		mu_assert("Error in test24BitRateDecompression (1-5-18): compressed bytes dont match expected", uncompressedData[i] == decompressedData[i]);
+		mu_assert(uncompressedData[i] == decompressedData[i], "ERROR in test24BitRateDecompression (1-11-10): compressed bytes dont match expected");
 	}
-
-
-	return 0;
 }
 
-static char *all_tests() {
-	mu_run_test(testGetAbsoluteFilepaths);
-	mu_run_test(testGetData);
-	mu_run_test(testGetRunlengthCompressedData);
-	mu_run_test(testGetRunlengthDecompressedData);
-	mu_run_test(testGet24BitCompressedData);
-	mu_run_test(testGet24BitDecompressedData);
-	mu_run_test(testGetVariableBitCompressedData);
-	mu_run_test(testGetVariableDecompressedData);
-	return 0;
-}
- 
-int main(int argc, char **argv) {
-	char *result = all_tests();
-     	if (result != 0) {
-	     printf("%s\n", result);
-     	}
-     	else {
-	     printf("ALL TESTS PASSED\n");
+//test decompressing a value from the compressed array
+MU_TEST(testGetVariableBitDecompressedValue) {
+	//tests for 1-7-12 dataset
+	char *testDataset = "../data/test_datasets/non_aligned/5lines_4mag_7prec.txt";
+	int uncompressedCount = 0;
+	float junk = 0.0;
+	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	int i;
+	int compressedCount = 0;
+	float extractedVal;
+	unsigned char *compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 4, 7);
+	for(i = 0; i < uncompressedCount; i++) {
+		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i, 4, 7);
+		mu_assert(uncompressedData[i] == extractedVal, "ERROR IN VBARIABLE DECOM");
 	}
-	printf("Tests run: %d\n", tests_run);
-	return result != 0;
+
+	testDataset = "../data/test_datasets/non_aligned/5lines_11mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 11, 10);
+	for(i = 0; i < uncompressedCount; i++) {
+		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i, 11, 10);
+		mu_assert(uncompressedData[i] == extractedVal, "ERROR IN VBARIABLE DECOM");
+	}
+
+	testDataset = "../data/test_datasets/non_aligned/5lines_5mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 5, 10);
+	for(i = 0; i < uncompressedCount; i++) {
+		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i, 5, 10);
+		mu_assert(uncompressedData[i] == extractedVal, "ERROR IN VBARIABLE DECOM");
+	}
+
+	testDataset = "../data/test_datasets/non_aligned/5lines_7mag_12prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 7, 12);
+	for(i = 0; i < uncompressedCount; i++) {
+		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i, 7, 12);
+		mu_assert(uncompressedData[i] == extractedVal, "ERROR IN VBARIABLE DECOM");
+	}
+}
+
+MU_TEST(testInsertVariableBitValue) {
+	//tests for 1-7-12 dataset
+	char *testDataset = "../data/test_datasets/non_aligned/5lines_4mag_7prec.txt";
+	int uncompressedCount = 0;
+	float junk = 0.0;
+	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	int i;
+	int compressedCount = 0;
+	float extractedVal;
+	unsigned char *compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 4, 7);
+
+	for(i = 0; i < 4; i++) {
+		//grab value 1 index ahead and move it to current and verify its there
+		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i+1, 4, 7); //grab value 1 ahead
+		insertVariableBitValue(compressedData, compressedCount, i, extractedVal, 4, 7);
+		mu_assert(extractedVal == getVariableBitDecompressedValue(compressedData, compressedCount, i, 4, 7), "ERROR in testInsertVariableBitValue");
+	}
+	free(uncompressedData);
+	free(compressedData);
+
+	testDataset = "../data/test_datasets/non_aligned/5lines_11mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 11, 10);
+
+	for(i = 0; i < 4; i++) {
+		//grab value 1 index ahead and move it to current and verify its there
+		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i+1, 11, 10); //grab value 1 ahead
+		insertVariableBitValue(compressedData, compressedCount, i, extractedVal, 11, 10);
+		mu_assert(extractedVal == getVariableBitDecompressedValue(compressedData, compressedCount, i, 11, 10), "ERROR in testInsertVariableBitValue");
+	}
+	free(uncompressedData);
+	free(compressedData);
+
+	testDataset = "../data/test_datasets/non_aligned/5lines_5mag_10prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 5, 10);
+
+	for(i = 0; i < 4; i++) {
+		//grab value 1 index ahead and move it to current and verify its there
+		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i+1, 5, 10); //grab value 1 ahead
+		insertVariableBitValue(compressedData, compressedCount, i, extractedVal, 5, 10);
+		mu_assert(extractedVal == getVariableBitDecompressedValue(compressedData, compressedCount, i, 5, 10), "ERROR in testInsertVariableBitValue");
+	}
+	free(uncompressedData);
+	free(compressedData);
+
+	testDataset = "../data/test_datasets/non_aligned/5lines_7mag_12prec.txt";
+	uncompressedCount = 0;
+	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
+	compressedCount = 0;
+	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 7, 12);
+
+	for(i = 0; i < 4; i++) {
+		//grab value 1 index ahead and move it to current and verify its there
+		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i+1, 7, 12); //grab value 1 ahead
+		insertVariableBitValue(compressedData, compressedCount, i, extractedVal, 7, 12);
+		mu_assert(extractedVal == getVariableBitDecompressedValue(compressedData, compressedCount, i, 7, 12), "ERROR in testInsertVariableBitValue");
+	}
+	free(uncompressedData);
+	free(compressedData);
+}
+
+MU_TEST_SUITE(test_suite) {
+	MU_RUN_TEST(testGetAbsoluteFilepaths);
+	MU_RUN_TEST(testGetData);
+	MU_RUN_TEST(testGetRunlengthCompressedData);
+	MU_RUN_TEST(testGetRunlengthDecompressedData);
+	MU_RUN_TEST(testGet24BitCompressedData);
+	MU_RUN_TEST(testGet24BitDecompressedData);
+	MU_RUN_TEST(testSingle24BitDecompress);
+	MU_RUN_TEST(testSingle24BitCompress);
+	MU_RUN_TEST(testGetVariableBitCompressedData);
+	MU_RUN_TEST(testGetVariableDecompressedData);
+	MU_RUN_TEST(testGetVariableBitDecompressedValue);
+	MU_RUN_TEST(testInsertVariableBitValue);
+}
+
+int main(int argc, char *argv[]) {
+	MU_RUN_SUITE(test_suite);
+	MU_REPORT();
+	return minunit_status;
 }
