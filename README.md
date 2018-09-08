@@ -1,17 +1,24 @@
-# mscproject
-Run-length encoding on GPUs for weather simulations using OpenCL.
+# Craig Thomson MSc Project
+Comparison of compression methods for scientific floating point data, targeted towards later use on hardware accelerators
 
-## State of play
-
-### TO-DO list
-TO-DOs as of 24/8/18.
-
-Friday/Saturday/Sunday
+## Pre-requisites
 ```
-1. 24 Bit compression + test verification
-2. 24 bit decompression
-3. Variable length compression
-4. Variable length decompression
-5. GPU coding
-6. Check dataset
+	1. ZFP installed (https://github.com/LLNL/zfp)
+	2. Set ZFP include and library path in Makefile
 ```
+### Run instructions
+note: all code has been tested on Ubuntu 14.04 with gcc 4.8.4
+To run code tests:
+```
+	1. make test
+	2. ./test
+```
+To evaluate compression algorithm overhead and compression ratios:
+```
+	1. make evaluate
+	2. ./evaluate
+```
+To clean:
+```
+	1. make clean
+````
