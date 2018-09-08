@@ -15,17 +15,17 @@ struct runlengthEntry { //Struct to represent a runlength entry of value and num
 	uint32_t valueCount;
 };
 
-void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtension, int *count);
+void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtension, unsigned int *count);
 
-float *getData(char *absFilePath, int *count, float *max, float *min, float *mean);
+float *getData(char *absFilePath, unsigned int *count, float *max, float *min, float *mean);
 
-int *getVerificationData(char *absFilePath, int *dataLength);
+unsigned int *getVerificationData(char *absFilePath, unsigned int *dataLength);
 
-int numDigits (int numBits);
+unsigned int numDigits (unsigned int numBits);
 
-struct runlengthEntry *getRunlengthCompressedData(float *values, int count, int *newCount);
+struct runlengthEntry *getRunlengthCompressedData(float *values, unsigned int count, unsigned int *newCount);
 
-float *getRunlengthDecompressedData(struct runlengthEntry *compressedValues, int count, int *newCount);
+float *getRunlengthDecompressedData(struct runlengthEntry *compressedValues, unsigned int count, unsigned int *newCount);
 
 struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned int count, unsigned int magBits, unsigned int precBits);
 

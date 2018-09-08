@@ -1,4 +1,4 @@
-//FILE: complete_compressor.c 
+//FILE: compressor.c 
 //AUTHOR: Craig Thomson
 //PURPOSE: contains all functions used for compression/decompression and other utilities
 
@@ -9,12 +9,12 @@
 #include <dirent.h>
 #include <math.h>
 #include <assert.h>
-#include "compressor.h"
 #include <float.h>
+#include "compressor.h"
 
 struct floatSplitValue { //Struct to represent the before and after decimal point values of a float split (3 bytes for each)
-	uint8_t *beforeDecimal;
-	uint8_t *afterDecimal;
+	uint8_t beforeDecimal[3];
+	uint8_t afterDecimal[3];
 };
 
 /* 
@@ -26,7 +26,7 @@ struct floatSplitValue { //Struct to represent the before and after decimal poin
  * 		3. fileExtension - The filename extension of the targeted files in the base directory.
  *		4. count - A blank pointer which later getss set to the number of files found.
  */
-void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtension, int *count) {
+void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtension, unsigned int *count) {
 	struct dirent *directoryEntry;
 	DIR *directory = opendir(baseDirectory);
 	int pathLen = strlen(baseDirectory)+1; //For null char
@@ -57,7 +57,7 @@ void getAbsoluteFilepaths(char *files[], char *baseDirectory, char *fileExtensio
  *		4. min - Blank pointer passed in to be assigned to the minimum value in the returned array.
  *		5. mean - Blank pointer passed in to be assigned to the average value of the returned array.
  */
-float *getData(char *absFilePath, int *count, float *max, float *min, float *mean) {
+float *getData(char *absFilePath, unsigned int *count, float *max, float *min, float *mean) {
 	FILE *contentFile = fopen(absFilePath, "r");
 	float *fileContent = malloc((150*150*150)*sizeof(float)); //arbitrarily large allocation for other datasets
 	int i = 0;
@@ -92,17 +92,17 @@ float *getData(char *absFilePath, int *count, float *max, float *min, float *mea
  * 		1. absFilePath - absolute file path of the file that data will be extracted from
  * 		2. dataLength - passed in to get the number of values/indexes of the data
  */
-int *getVerificationData(char *absFilePath, int *dataLength) {
+unsigned int *getVerificationData(char *absFilePath, unsigned int *dataLength) {
 	FILE *contentFile = fopen(absFilePath, "r");
-	int *fileContent = malloc(100*sizeof(int)); //arbitrarily large allocation (supports bigger test files) 
-	int i = 0;
+	unsigned int *fileContent = malloc(100*sizeof(unsigned int)); //arbitrarily large allocation (supports bigger test files) 
+	unsigned int i = 0;
 
 	while(fscanf(contentFile, "%d", &fileContent[i]) == 1) { //while there's still data left, copy it into the array
 		i++;
 	}
 	fclose(contentFile);
-	int *exactContent = malloc(i*sizeof(int));
-	memcpy(exactContent, fileContent, i*sizeof(int)); //resize to whats needed
+	unsigned int *exactContent = malloc(i*sizeof(unsigned int));
+	memcpy(exactContent, fileContent, i*sizeof(unsigned int)); //resize to whats needed
 	*dataLength = i;
 
 	return exactContent;
@@ -110,47 +110,46 @@ int *getVerificationData(char *absFilePath, int *dataLength) {
 
 /*
  * Purpose:
- *		Get the number of digits required to represent an numBits bits number.
+ *		Get the number of digits required to represent an numberOfBits size number.
  * Returns:
- *		The maximum number of digits needed to represent a numBits size number. (e.g. pass numBits=7, 2^7=128, 3 digits).
+ *		The maximum number of digits needed to represent a numBits size number. (e.g. pass numberOfBits=7, 2^7=128, 3 digits).
  * Parameters:
- *		1. numBits - The number of bits the number needs to represent it.
+ *		1. numberOfBits - The number of bits a number uses
  */
-int numDigits (int numBits) {
-    if (numBits == 0) return 1;
-    return floor (log10 (pow(2,numBits))) + 1;
+unsigned int numberOfDigits (unsigned int numberOfBits) {
+    if (numberOfBits == 0) return 1;
+    return floor (log10 (pow(2,numberOfBits))) + 1;
 }
 
 /*
  * Purpose:
- * 		Split a float into 2 ints (used for 24 bit compression, turning the float into 2 ints before storing).
+ * 		Split a float into a floatSplitValue struct that contains 2 ints for the value before and after the decimal (after value is multiplied by multiplier).
  * Returns:
- * 		A floatSplitValue struct which represents the passed float.
+ * 		A floatSplitValue struct which represents the passed float scaled up.
  * Parameters:
- * 		1. value - The initial float value to be broken up.
+ * 		1. initialValue - The initial float value to be broken up.
  * 		2. multiplier - How much to multiply the value after the decimal point to. (10,100,10,000 ...).
  */
-struct floatSplitValue splitFloat(float value, unsigned int multiplier) {
+struct floatSplitValue splitFloat(float initialValue, unsigned int multiplier) {
 	float beforeDp, afterDp;
 	uint32_t before, after;
-
-	afterDp = modff(value, &beforeDp); //modff to get the before and after decimal as floats
+	afterDp = modff(initialValue, &beforeDp); //modff to get the before and after decimal as floats
 	before = (uint32_t) fabs(beforeDp);
-	//printf("scaling up by %u\n", multiplier);
-	//printf("before %f after %f\n", afterDp, afterDp* (float)multiplier);
 	after = (uint32_t) round((fabs(afterDp) * multiplier));
 
-	uint8_t *beforeBytes = malloc(3*sizeof(uint8_t)); //strip out byte by byte
+
+
+	uint8_t beforeBytes[3] = {0,0,0};
 	beforeBytes[2] = (before >> 16) & 0xFF;
 	beforeBytes[1] = (before >> 8) & 0xFF;
 	beforeBytes[0] = before & 0xFF;
 
-	uint8_t *afterBytes = malloc(3*sizeof(uint8_t));
+	uint8_t afterBytes[3] = {0,0,0};
 	afterBytes[2] = (after >> 16) & 0xFF;
 	afterBytes[1] = (after >> 8) & 0xFF;
 	afterBytes[0] = after & 0xFF;
 
-	struct floatSplitValue split = { .beforeDecimal = beforeBytes, .afterDecimal = afterBytes};
+	struct floatSplitValue split = {beforeBytes[0], beforeBytes[1], beforeBytes[2], afterBytes[0], afterBytes[1], afterBytes[2]};
 
 	return split;
 }
@@ -165,7 +164,7 @@ struct floatSplitValue splitFloat(float value, unsigned int multiplier) {
  * 		2. count - A count of the number of values in the given data.
  * 		3. newCount - A count of the number of entries in the runlength compressed data.
  */
-struct runlengthEntry *getRunlengthCompressedData(float *values, int count, int *newCount) {
+struct runlengthEntry *getRunlengthCompressedData(float *values, unsigned int count, unsigned int *newCount) {
 	struct runlengthEntry *compressedData = calloc(count, sizeof(struct runlengthEntry));
 	compressedData[0].value = values[0]; //Have to initilise the first index then work from there
 	compressedData[0].valueCount = 1;
@@ -194,7 +193,7 @@ struct runlengthEntry *getRunlengthCompressedData(float *values, int count, int 
  * 		2. count - the number of runlengthEntry structs that compressedValues contains
  * 		3. newCount - blank pointer that gets assigned the number of entries in the returned decompressed data
  */
-float *getRunlengthDecompressedData(struct runlengthEntry *compressedValues, int count, int *newCount) {
+float *getRunlengthDecompressedData(struct runlengthEntry *compressedValues, unsigned int count, unsigned int *newCount) {
 	int i;
 	int totalCount = 0;
 
@@ -229,10 +228,10 @@ float *getRunlengthDecompressedData(struct runlengthEntry *compressedValues, int
 struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned int count, unsigned int magBits, unsigned int precBits) {
 	struct compressedVal *compressedData = calloc(count, sizeof(struct compressedVal)); //Create array for new compressed values
 	unsigned int multiplier;
-	if(numDigits(precBits) == 1) {
+	if(numberOfDigits(precBits) == 1) {
 		multiplier = 10;
 	} else {
-		multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
+		multiplier = pow(10, numberOfDigits(precBits)-1); //max number of digits that can be represented by a precBits number
 	}
 	
 	unsigned int i, space, target, ci, uci; //ci = compressed index, uci = uncompressed indexspace is byte space, target is number of bits trying to move
@@ -316,10 +315,10 @@ struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned i
 float *get24BitDecompressedData(struct compressedVal *values, unsigned int count, unsigned int magBits, unsigned int precBits) {
 	float *uncompressed = calloc(count, sizeof(float));
 	unsigned int divider;
-	if(numDigits(precBits) == 1) {
+	if(numberOfDigits(precBits) == 1) {
 		divider = 10;
 	} else {
-		divider = pow(10, numDigits(precBits)-1);
+		divider = pow(10, numberOfDigits(precBits)-1);
 	}
 	unsigned int beforeDp = 0;
 	unsigned int afterDp = 0;
@@ -381,10 +380,10 @@ float get24BitCompressedValue(struct compressedVal *allValues, unsigned int inde
 	unsigned int afterDp = 0;
 	unsigned int divider = 0;
 	int signMultiplier = 0;
-	if(numDigits(precBits) == 1) {
+	if(numberOfDigits(precBits) == 1) {
 		divider = 10;
 	} else {
-		divider = pow(10, numDigits(precBits)-1);
+		divider = pow(10, numberOfDigits(precBits)-1);
 	}
 	struct compressedVal targetVal = allValues[index];
 	if(targetVal.data[2] >> 7 == 1) {
@@ -439,10 +438,10 @@ void storeValueAs24Bit(struct compressedVal *allValues, float updatedValue, unsi
 	allValues[index].data[0] = 0;
 
 	unsigned int multiplier;
-	if(numDigits(precBits) == 1) {
+	if(numberOfDigits(precBits) == 1) {
 		multiplier = 10;
 	} else {
-		multiplier = pow(10, numDigits(precBits)-1); //max number of digits that can be represented by a precBits number
+		multiplier = pow(10, numberOfDigits(precBits)-1); //max number of digits that can be represented by a precBits number
 	}
 	unsigned int i, space, target, ci, uci; //ci = compressed index, uci = uncompressed indexspace is byte space, target is number of bits trying to move
 	struct floatSplitValue value = splitFloat(updatedValue, multiplier); //turn float into 2 ints representing before and after decimal
@@ -518,10 +517,10 @@ unsigned char *getVariableBitCompressedData(float *uncompressedData, unsigned in
 	struct floatSplitValue value;
 	unsigned int multiplier;
 
-	if(numDigits(precBits) == 1) {
+	if(numberOfDigits(precBits) == 1) {
 		multiplier = 10;
 	} else {
-		multiplier = pow(10, numDigits(precBits)); //max number of digits that can be represented by a precBits number
+		multiplier = pow(10, numberOfDigits(precBits)); //max number of digits that can be represented by a precBits number
 	}
 	unsigned int uci = 0;
 	int i;
@@ -609,10 +608,10 @@ float *getVariableBitDecompressedData(unsigned char *values, unsigned int count,
 	float *uncompressed = calloc(count, sizeof(float));
 	unsigned int uci = 0; //uncompressedindex (for storing uncomp values)
 	unsigned int divider;
-	if(numDigits(precBits) == 1) {
+	if(numberOfDigits(precBits) == 1) {
 		divider = 10;
 	} else {
-		divider = pow(10, numDigits(precBits)-1);
+		divider = pow(10, numberOfDigits(precBits)-1);
 	}
 	divider = divider*10;
 	//printf("divider is %d\n", divider);
@@ -739,10 +738,10 @@ float getVariableBitDecompressedValue(unsigned char *values, unsigned int byteCo
 	//float *uncompressed = calloc(count, sizeof(float));
 	unsigned int uci = 0; //uncompressedindex (for storing uncomp values)
 	unsigned int divider;
-	if(numDigits(precBits) == 1) {
+	if(numberOfDigits(precBits) == 1) {
 		divider = 10;
 	} else {
-		divider = pow(10, numDigits(precBits)-1);
+		divider = pow(10, numberOfDigits(precBits)-1);
 	}
 	divider = divider*10;
 	unsigned int beforeDp;// = 0;
@@ -824,10 +823,10 @@ unsigned int ci = startByte;
 	struct floatSplitValue split;
 	unsigned int multiplier;
 
-	if(numDigits(precBits) == 1) {
+	if(numberOfDigits(precBits) == 1) {
 		multiplier = 10;
 	} else {
-		multiplier = pow(10, numDigits(precBits)); //max number of digits that can be represented by a precBits number
+		multiplier = pow(10, numberOfDigits(precBits)); //max number of digits that can be represented by a precBits number
 	}
 	int totalToZero = 1+magBits+precBits;
 	int currentCount = startIndex;

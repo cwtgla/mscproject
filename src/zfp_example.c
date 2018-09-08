@@ -1,5 +1,5 @@
 /* minimal code example showing how to call the zfp (de)compressor */
-//taken from zfp docs
+//taken from zfp docs and modified slightly (credit/source: https://github.com/LLNL/zfp/blob/master/examples/simple.c)
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>

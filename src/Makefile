@@ -12,7 +12,7 @@ evaluate: compressor.o zfp_example.o
 	$(CC) analysis.c compressor.o zfp_example.o $(LFLAG) $(LIBS) $(LIBS2) -o evaluate
 
 test: compressor.o
-	$(CC) compressor.o tests.c $(LIBS) -o tests
+	$(CC) compressor.o tests.c $(LIBS) -o test
 
 zfp_example.o:
 	$(CC) -c zfp_example.c $(IFLAG) $(LFLAG) $(LIBS2)
