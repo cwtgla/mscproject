@@ -94,45 +94,6 @@ float updateValue(int i, int j, int k, float* values) {
 	values[F3D2C(150,150,0,0,0,i,j,k)]=current+(tmp/divisor);
 }
 
-//given an i,j,k index update the value based on whats around it
-float update24Value(int i, int j, int k, struct compressedVal *values) {
-	float tmp = 0.0f;
-	int divisor = 0;
-	//float current = values[F3D2C(150,150,0,0,0,i,j,k)];
-	float current = get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j,k)], 5, 18);
-
-	if(getIndex(i-1,j,k)!=-1) {
-		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i-1,j,k)], 5, 18);
-		divisor++;
-	}
-	if(getIndex(i+1,j,k)!=-1){
-		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i+1,j,k)], 5, 18);
-		//tmp+=values[F3D2C(150,150,0,0,0,i+1,j,k)];
-		divisor++;
-	}
-	if(getIndex(i,j-1,k) != -1){
-		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j-1,k)], 5, 18);
-	//	tmp+=values[F3D2C(150,150,0,0,0,i,j-1,k)];
-		divisor++;
-	}
-	if(getIndex(i,j+1,k)!=-1){
-		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j+1,k)], 5, 18);
-		tmp+=values[F3D2C(150,150,0,0,0,i,j+1,k)];
-		divisor++;
-	}
-	if(getIndex(i,j,k-1)!=-1){
-		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j,k-1)], 5, 18);
-	//	tmp+=values[F3D2C(150,150,0,0,0,i,j,k-1)];
-		divisor++;
-	}
-	if(getIndex(i,j,k+1)!=-1){
-		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j,k+1)], 5, 18);
-		//tmp+=values[F3D2C(150,150,0,0,0,i,j,k+1)];
-		divisor++;
-	}
-	storeValueAs24Bit(values, current+(tmp/divisor), F3D2C(150,150,0,0,0,i,j,k), 5, 18);
-	//values[F3D2C(150,150,0,0,0,i,j,k)]=current+(tmp/divisor);
-}
 
 
 void uncompressedTransformation() {
@@ -181,6 +142,48 @@ void uncompressedTransformation() {
 	printf("time taken uncompressed = %f %f\n", time_spend, time_spend/10.0);
 }
 
+///////////////////////////////////////////////////
+
+//given an i,j,k index update the value based on whats around it
+float update24Value(int i, int j, int k, struct compressedVal *values) {
+	float tmp = 0.0f;
+	int divisor = 0;
+	//float current = values[F3D2C(150,150,0,0,0,i,j,k)];
+	float current = get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j,k)], 5, 18);
+
+	if(getIndex(i-1,j,k)!=-1) {
+		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i-1,j,k)], 5, 18);
+		divisor++;
+	}
+	if(getIndex(i+1,j,k)!=-1){
+		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i+1,j,k)], 5, 18);
+		//tmp+=values[F3D2C(150,150,0,0,0,i+1,j,k)];
+		divisor++;
+	}
+	if(getIndex(i,j-1,k) != -1){
+		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j-1,k)], 5, 18);
+	//	tmp+=values[F3D2C(150,150,0,0,0,i,j-1,k)];
+		divisor++;
+	}
+	if(getIndex(i,j+1,k)!=-1){
+		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j+1,k)], 5, 18);
+		tmp+=values[F3D2C(150,150,0,0,0,i,j+1,k)];
+		divisor++;
+	}
+	if(getIndex(i,j,k-1)!=-1){
+		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j,k-1)], 5, 18);
+	//	tmp+=values[F3D2C(150,150,0,0,0,i,j,k-1)];
+		divisor++;
+	}
+	if(getIndex(i,j,k+1)!=-1){
+		tmp+=get24BitCompressedValue(values, [F3D2C(150,150,0,0,0,i,j,k+1)], 5, 18);
+		//tmp+=values[F3D2C(150,150,0,0,0,i,j,k+1)];
+		divisor++;
+	}
+	storeValueAs24Bit(values, current+(tmp/divisor), F3D2C(150,150,0,0,0,i,j,k), 5, 18);
+	//values[F3D2C(150,150,0,0,0,i,j,k)]=current+(tmp/divisor);
+}
+
 
 void transform24() {
 		char *directory = "../data/simulation_datasets/";
@@ -192,11 +195,15 @@ void transform24() {
 		struct fileStats *stats = malloc(numFiles * sizeof(struct fileStats));
 		float **datasets = malloc(numFiles*sizeof(float *));
 		//struct compressedVal **datasets 
+		struct compressedVal **datasets = malloc(numFiles*sizeof(struct compressedVal *));
+
 		//grab datasets
 		for(i = 0; i < numFiles; i++) {
 			struct fileStats entry = { .maxVal = 0.0, .minVal = 0.0, .avgVal = 0.0, .variableCount = 0, .uncompressedCount = 0, .runlengthCount = 0, .size24 = 0, .zfpSize = 0, .runlengthSize = 0};
 			stats[i] = entry;
-			datasets[i] = getData(files[i], &stats[i].uncompressedCount, &stats[i].maxVal, &stats[i].minVal, &stats[i].avgVal);
+			float *data = getData(files[i], &stats[i].uncompressedCount, &stats[i].maxVal, &stats[i].minVal, &stats[i].avgVal);
+			struct compressedVal *compressed24 = get24BitCompressedData(data, stats[i].uncompressedCount, 5, 18);
+			datasets[i] = compressed24;
 		}
 
 		int j;
@@ -225,7 +232,7 @@ void transform24() {
 	}
 	clock_t end = clock();
 	double time_spend = (double)(end-start) / CLOCKS_PER_SEC;
-	printf("time taken uncompressed = %f %f\n", time_spend, time_spend/10.0);
+	printf("time taken 24compressed = %f %f\n", time_spend, time_spend/10.0);
 }
 
 
@@ -316,18 +323,10 @@ void compressionRatioAnalysis() {
 
 	//run options are compressionRatio analysis or compression overhead analysis
 	int main() {
-	//	char *directory = "../data/simulation_datasets/";
-	//	char *files[100];
-	//	int numFiles = 0;
-		//getAbsoluteFilepaths(files, directory, ".txt.clean", &numFiles);	//grab list of simulation datafiles
-
-		//int i;
-	//	float **datasets = malloc(numFiles*sizeof(float *));
-
-
 		//compressionRatioAnalysis();
-		uncompressedTransformation();
-		///transform(datasets[0]);
+		//uncompressedTransformation();
+		transform24();
+
+
 		return 0;
 	}
-//float *getVariableBitDecompressedData(unsigned char *values, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits);
