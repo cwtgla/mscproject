@@ -1,0 +1,220 @@
+Basic stats for file: ../data/simulation_datasets/one_quarter_sim.txt.clean
+Number of values: 2025000, Max value: 13.074379, Min value: -16.119495, Average value: -0.039106
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2024995, Runlength compressed size: 16199960 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5505656 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/one_half_sim.txt.clean
+Number of values: 2025000, Max value: 12.651135, Min value: -11.630094, Average value: -0.034482
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2024999, Runlength compressed size: 16199992 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5664160 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/two_third_sim.txt.clean
+Number of values: 2025000, Max value: 12.863817, Min value: -11.706923, Average value: -0.036299
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2024999, Runlength compressed size: 16199992 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5662768 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/complete_sim.txt.clean
+Number of values: 2025000, Max value: 10.155290, Min value: -10.930655, Average value: -0.037322
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2025000, Runlength compressed size: 16200000 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5687152 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/four_fifth_sim.txt.clean
+Number of values: 2025000, Max value: 11.882215, Min value: -8.601760, Average value: -0.041041
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2024999, Runlength compressed size: 16199992 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5663376 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/three_fifth_sim.txt.clean
+Number of values: 2025000, Max value: 9.999895, Min value: -10.504049, Average value: -0.035774
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2024997, Runlength compressed size: 16199976 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5646616 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/three_quarter_sim.txt.clean
+Number of values: 2025000, Max value: 14.523329, Min value: -10.953383, Average value: -0.036151
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2024999, Runlength compressed size: 16199992 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5723632 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/two_fifth_sim.txt.clean
+Number of values: 2025000, Max value: 10.120451, Min value: -9.083439, Average value: -0.033463
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2025000, Runlength compressed size: 16200000 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5634448 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/one_third_sim.txt.clean
+Number of values: 2025000, Max value: 13.204492, Min value: -14.462990, Average value: -0.039257
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2024998, Runlength compressed size: 16199984 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5504648 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
+Basic stats for file: ../data/simulation_datasets/one_fifth_sim.txt.clean
+Number of values: 2025000, Max value: 11.404190, Min value: -9.406430, Average value: -0.037463
+	Uncompressed size: 8100000 bytes
+Stats after runlength compression
+	Number of runlength entries: 2024997, Runlength compressed size: 16199976 bytes
+Stats after ZFP compression
+	ZFP compressed size: 5360160 bytes
+Stats after 24 bit compression
+	24 Bit compressed size: 6075000 bytes
+Stats for non byte aligned compression
+	5 Mag 15 Precision compressed size: 5315625
+
+
+	5 Mag 12 Precision compressed size: 4556250
+
+
+	5 Mag 9 Precision compressed size: 3796875
+
+
+	5 Mag 6 Precision compressed size: 3037500
+
+
