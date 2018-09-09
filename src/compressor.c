@@ -224,8 +224,10 @@ float *getRunlengthDecompressedData(struct runlengthEntry *compressedValues, uns
  *		3. precBits - Number of bits to be used to represent the precision of the data (bits used for after decimal place).
  */
 struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned int count, unsigned int magBits, unsigned int precBits) {
-	struct compressedVal *compressedData = calloc(count, sizeof(struct compressedVal)); //Create array for new compressed values
+	struct compressedVal *compressedData = calloc(count, sizeof(struct compressedVal)); //Create array for new compressed values, dynamic allocation since this part shouldnt be run on accelerator
 	unsigned int multiplier;
+
+	//multiplier for value after decimal
 	if(numberOfDigits(precBits) == 1) {
 		multiplier = 10;
 	} else {
@@ -238,7 +240,8 @@ struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned i
 	for(i = 0; i < count; i++) {
 		value = splitFloat(uncompressedData[i], multiplier); //turn float into 2 ints representing before and after decimal
 
-		if (uncompressedData[i] < 0) { //Set the sign bit (1 for -ve, 0 for +ve)
+		//extracting sign bit
+		if (uncompressedData[i] < 0) {
 			compressedData[i].data[2] = 1 << 7;
 		}
 		if(magBits + 1 == 8) { //Case with 7 bits of magnitude, 16 of precision
@@ -247,7 +250,7 @@ struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned i
 			compressedData[i].data[0] = value.afterDecimal[0];
 		} 
 		else if(magBits + 1 < 8) { //Case where some precision bits are in byte 2 (small mag, high prec)
-			compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[0] << (7-magBits));
+			compressedData[i].data[2] = compressedData[i].data[2] | (value.beforeDecimal[0] << 7-magBits);
 			compressedData[i].data[2] = compressedData[i].data[2] | value.afterDecimal[2];
 			compressedData[i].data[1] = value.afterDecimal[1];
 			compressedData[i].data[0] = value.afterDecimal[0];
@@ -266,10 +269,9 @@ struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned i
 				target = magBits;
 			}
 
-			// while (target != 0 && uci >= 0) {	//While we have bits to insert and we've got bytes to extract from
-			while (target != 0) {	//While we have bits to insert and we've got bytes to extract from
-				if (space >= target) { //If we can fit the current values byte into the compressed byte
-					compressedData[i].data[ci] = compressedData[i].data[ci] | (value.beforeDecimal[uci] << (space-target));
+			while (target != 0) {	//shift in magnitude bits
+				if (space >= target) { //If we can fit the current values byte into the compressed byte, we want RHS of our data
+					compressedData[i].data[ci] = compressedData[i].data[ci] | (value.beforeDecimal[uci] << space-target);
 					space = space - target;
 					if(space == 0) { //If there's no space left, move to the next compressed byte
 						ci--;
@@ -282,15 +284,15 @@ struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned i
 						uci--;
 						target = 0;
 					}
-				} else { //We're trying to squeeze more data than we have free indexes
-					compressedData[i].data[ci] = compressedData[i].data[ci] | (value.beforeDecimal[uci] >> (target-space));
+				} else { //We're trying to squeeze more data than we have free indexes, we want LHS of our data
+					compressedData[i].data[ci] = compressedData[i].data[ci] | (value.beforeDecimal[uci] >> target-space);
 					ci--;
 					target = target-space;
 					space = 8;
 				}
 			}
-			if(magBits >= 17) { //Extract the magnitude, either in last byte or part of byte 1 and all of last byte
-				compressedData[i].data[0] = compressedData[i].data[0] | (value.afterDecimal[0] & (((uint32_t) pow(2, precBits)) - 1));
+			if(magBits >= 17) { //shift in precision
+				compressedData[i].data[0] = compressedData[i].data[0] | (value.afterDecimal[0] & ((uint32_t) pow(2, precBits) - 1));
 			} else {
 				compressedData[i].data[1] = compressedData[i].data[1] | value.afterDecimal[1];
 				compressedData[i].data[0] = value.afterDecimal[0];
@@ -387,14 +389,19 @@ float *get24BitDecompressedData(struct compressedVal *allValues, unsigned int co
 float getSingle24BitValue(struct compressedVal *allValues, unsigned int index, unsigned int magBits, unsigned int precBits) {
 	unsigned int beforeDp = 0;
 	unsigned int afterDp = 0;
-	unsigned int divider = 0;
+	unsigned int divider;
 	int signMultiplier = 0;
+
+	//setup value to divide integer for after decimal
 	if(numberOfDigits(precBits) == 1) {
 		divider = 10;
 	} else {
 		divider = pow(10, numberOfDigits(precBits)-1);
 	}
+
 	struct compressedVal targetVal = allValues[index];
+
+	//sign bit extraction
 	if(targetVal.data[2] >> 7 == 1) {
 		signMultiplier = -1;
 	} else {
@@ -412,21 +419,21 @@ float getSingle24BitValue(struct compressedVal *allValues, unsigned int index, u
 			afterDp = afterDp | targetVal.data[0];
 		} else if(magBits+1 > 8) { //Magnitude fills over a byte and more
 			beforeDp = (targetVal.data[2] & (((uint32_t) pow(2,7)) - 1)) << (magBits - 7); //Extract last 7 bits from the first byte
-			int magBitsLeft = magBits - 7;
+			magBits = magBits - 7;
 			int precBitsLeft = precBits;
 			int ci = 1; //compressed data index
 
-			while(magBitsLeft != 0) {
-				if(magBitsLeft >= 8) { //Whole byte or more of interest
-					beforeDp = beforeDp | (targetVal.data[ci] << (magBitsLeft-8));
-					magBitsLeft = magBitsLeft - 8;
+			while(magBits != 0) { //while magnitude bits left to decompress
+				if(magBits >= 8) { //Whole byte or more of interest
+					beforeDp = beforeDp | (targetVal.data[ci] << (magBits-8));
+					magBits = magBits - 8;
 					ci--;
 				} else { //LHS of byte of interest, use masks to extract relevant bits
-					beforeDp = beforeDp | ((((uint32_t) pow(2,8)-1) - ((uint32_t) pow(2,8-magBitsLeft)-1)) & targetVal.data[ci]) >> (8-magBitsLeft);
-					magBitsLeft = 0;
+					beforeDp = beforeDp | ((((uint32_t) pow(2,8)-1) - ((uint32_t) pow(2,8-magBits)-1)) & targetVal.data[ci]) >> (8-magBits);
+					magBits = 0;
 				}
 			}
-			while(precBitsLeft != 0) {
+			while(precBitsLeft != 0) { //while precision bits left to decompress
 				if(precBitsLeft >= 8) { //Precision is the whole byte
 					afterDp = afterDp | targetVal.data[ci];
 					precBitsLeft = precBitsLeft - 8;
@@ -451,6 +458,7 @@ float getSingle24BitValue(struct compressedVal *allValues, unsigned int index, u
  *		5. precBits - Number of bits that have been used to represent precision in the 24 bit notation.
  */
 void insertSingle24BitValue(struct compressedVal *allValues, float updatedValue, unsigned int index, unsigned int magBits, unsigned int precBits) {
+	//clear existing bytes
 	allValues[index].data[2] = 0;
 	allValues[index].data[1] = 0;
 	allValues[index].data[0] = 0;
@@ -492,7 +500,7 @@ void insertSingle24BitValue(struct compressedVal *allValues, float updatedValue,
 				target = magBits;
 			}
 
-			while (target != 0){//} && uci >= 0) {	//While we have bits to insert and we've got bytes to extract from
+			while (target != 0){ //While we have bits to insert and we've got bytes to extract from
 				if (space >= target) { //If we can fit the current values byte into the compressed byte
 					allValues[index].data[ci] = allValues[index].data[ci] | (value.beforeDecimal[uci] << (space-target));
 					space = space - target;
@@ -500,11 +508,10 @@ void insertSingle24BitValue(struct compressedVal *allValues, float updatedValue,
 						ci--;
 						space = 8;
 					}
-					if(uci > 0) { //If we're not on our last byte, decrement
-						uci--;
+					uci--;
+					if(uci == 0) { //If we're not on our last byte, decrement;
 						target = 8;
 					} else { //Done, get out of while
-						uci--;
 						target = 0;
 					}
 				} else { //We're trying to squeeze more data than we have free indexes
@@ -536,9 +543,10 @@ void insertSingle24BitValue(struct compressedVal *allValues, float updatedValue,
  *		5. precBits - Number of bits that have been used to represent precision in the 24 bit notation.
  */
 unsigned char *getVariableBitCompressedData(float *uncompressedData, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits) {
-	unsigned int ci = (int) ceil(((count*(1+magBits+precBits))/(float)8))-1;
+	unsigned int ci = (int) ceil(((count*(1+magBits+precBits))/(float)8))-1; //calculate starting index of the value 
 	*newCount = ci+1;
 	unsigned char *compressedData = calloc(ci+1, sizeof(unsigned char));
+
 	int j;
 	unsigned int space = 8;
 	unsigned int target = 1;
@@ -646,109 +654,79 @@ unsigned char *getVariableBitCompressedData(float *uncompressedData, unsigned in
 float *getVariableBitDecompressedData(unsigned char *allValues, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits) {
 	float *uncompressed = calloc(count, sizeof(float));
 	unsigned int uci = 0; //uncompressedindex (for storing uncomp values)
+	unsigned int beforeDp;
+	unsigned int afterDp;
+	unsigned int i;
+	int signMultiplier;
+	unsigned int ci = count-1; //compressed index
+	unsigned int target; //how many target bits (how many bits trying to insert)
+	unsigned int uncompBits = 8; //uncompressedbits
+	unsigned int uncompLimit =  (uint32_t) (ceil((8*count)/(1+magBits+precBits)));
 	unsigned int divider;
+
 	if(numberOfDigits(precBits) == 1) {
 		divider = 10;
 	} else {
 		divider = pow(10, numberOfDigits(precBits)-1);
 	}
 	divider = divider*10;
-	//printf("divider is %d\n", divider);
-	unsigned int beforeDp;// = 0;
-	unsigned int afterDp;// = 0;
-	int i, signMultiplier;
-	unsigned int ci = count-1; //compressed index
-	unsigned int index = 8;
-	unsigned int target; //how many target bits
 
-	unsigned int uncompBits = 8; //uncompressedbits
-
-
-	//check we've not decompd enoguh nums
-	//while(ci >= 0 && uci != ceil((8*count)*(1+magBits+precBits))-1) {
-	
-	unsigned int uncompLimit =  (uint32_t) (ceil((8*count)/(1+magBits+precBits)));
-	//printf("lim check is %d\n", uncompLimit);
+	//While still have bytes to decompress
 	while(uci != uncompLimit) {
-	//while(ci >= 0) {
-	//	printf("decompressing comp index %d\n", ci);
-	//	printf("current byte value is %u\n", values[ci]);
 		beforeDp = 0;
 		afterDp = 0;
 		target = 1;
 		if(((allValues[ci] >> (uncompBits-target)) & (uint32_t) pow(2,target)-1) == 1) { //extract sign bit
-		//	printf("sign -1\n");
 			signMultiplier = -1;
 		} else {
-		//	printf("sign 1\n");
 			signMultiplier = 1;
 		}
-
 		uncompBits--;
 
 		if(uncompBits == 0) { //if we run out of space, move onto next byte
-		//	printf("dec\n");
 			ci--;
 			uncompBits = 8;
 		}
-		//printf("uncomp is %d\n", uncompBits);
+
+		//deal with magnitude bits
 		target = magBits; //extract magnitude
 		while(target != 0) {
-		//	printf("looking to decomp %d mag bits\n", target);
 			if(target > uncompBits) { //trying to extract more bits than available in current byte
 				//find out the number of useful bits we have (it'll be on RHS) AND to get it then move on
 				beforeDp = beforeDp | (((allValues[ci]) & (uint32_t) pow(2, uncompBits)-1) << (target-uncompBits));
-			//	printf("before dp is %u\n", beforeDp);
 				ci--;
-
-			//	printf("dec2\n");	
 				target = target - uncompBits;
 				uncompBits = 8;
 			} else { //got what we want in the current byte
 				beforeDp =  beforeDp | ((allValues[ci] >> (uncompBits-target) & (uint32_t) pow(2, target)-1));
-			//	printf("before dp is %u\n", beforeDp);
 				uncompBits = uncompBits - target;
 				target = 0;
 				if(uncompBits == 0) {
 					ci--;
-			//		printf("dec1 val is %d\n", ci);
-					
 					uncompBits = 8;
 				}
 			}
 		}
-		//printf("MAG DECOMPRED IS %d\n", beforeDp);
+
+		//deal with precision bits
 		target = precBits;
 		while(target != 0) {
-			//printf("looking to decomp %d prec bits\n", target);
 			if(target > uncompBits) { //trying to extract more bits than available in current byte
-			//	printf("target %d > index %d\n", target, uncompBits);
-				//printf("byte val is %u\n", values[ci]);
 				//find out the number of useful bits we have (it'll be on RHS) AND to get it then move on
 				afterDp = (afterDp | ((allValues[ci]) & (uint32_t) pow(2, uncompBits)-1)) << (target-uncompBits);
-				//printf("taking val %u and with %d then shift %d\n", values[ci], (uint32_t) pow(2,index)-1, target-index);
-				//printf("current byte val after shift is %d\n", afterDp);
-			//	printf("ci dec4\n");
 				ci--;
-				//printf("dec4 val is now %d\n", ci);
 				target = target - uncompBits;
 				uncompBits = 8;
 			} else { //got what we want in the current byte
-				//printf("target %d < index %d\n", target, uncompBits);
 				afterDp = afterDp | ((((allValues[ci] >> (uncompBits-target)) & (uint32_t) pow(2, target)-1)));
 				uncompBits = uncompBits - target;
 				target = 0;
 				if(uncompBits == 0) {
-					//printf("dec");
 					ci--;
 					uncompBits = 8;
 				}
 			}
 		}
-		//printf("ending state ci is %d\n", ci);
-		//printf("PREC DECOMPRED IS %d\n", afterDp);
-		//printf("Before combining %u %f\n", beforeDp, ((float) afterDp) / divider);
-		//printf("Looking to store %f\n\n\n\n", signMultiplier * (beforeDp + ((float) afterDp) / divider));
 		uncompressed[uci] = signMultiplier * (beforeDp + ((float) afterDp) / divider);
 		uci++;
 	}
@@ -768,25 +746,10 @@ float *getVariableBitDecompressedData(unsigned char *allValues, unsigned int cou
  *		5. precBits - Number of bits that have been used to represent precision in the 24 bit notation.
  */
 float getSingleVariableBitValue(unsigned char *allValues, unsigned int byteCount, unsigned int targetIndex, unsigned int magBits, unsigned int precBits) {
-	//int index0Byte = (uint32_t) (ceil((8*count)/(1+magBits+precBits)));
-	
-
-	//printf("byte index 0 starts on %d\n", byteCount-1);
-	//printf("byte 0 %u\n", values[byteCount-1]);
-
-
 	int startByte = floor(targetIndex*(1+magBits+precBits)/8);
 	int startIndex = (targetIndex*(1+magBits+precBits)) % 8;
-	//int startIndex = (startByte*(1+magBits+precBits)) % 8;
-	//printf("Value %d is in byte %d index %d\n", targetIndex, byteCount-1-startByte, 7-startIndex);
-	//printf("Byte and index of value %d %d %d\n",targetIndex, abs(startByte-index0Byte), 8-startIndex);
-	//printf("byte 0 val %u\n", values[targetIndex]);
-
 	startByte =  byteCount-1-startByte;
 	startIndex = 7-startIndex;
-
-	//float *uncompressed = calloc(count, sizeof(float));
-	unsigned int uci = 0; //uncompressedindex (for storing uncomp values)
 	unsigned int divider;
 	if(numberOfDigits(precBits) == 1) {
 		divider = 10;
@@ -794,64 +757,67 @@ float getSingleVariableBitValue(unsigned char *allValues, unsigned int byteCount
 		divider = pow(10, numberOfDigits(precBits)-1);
 	}
 	divider = divider*10;
-	unsigned int beforeDp;// = 0;
-	unsigned int afterDp;// = 0;
+	unsigned int beforeDp;
+	unsigned int afterDp;
 	int i, signMultiplier;
-	//unsigned int ci = count-1; //compressed index
 	unsigned int ci = startByte;
-	//unsigned int index = startIndex;
-	//unsigned int index = 8;
 	unsigned int target; //how many target bits
 	unsigned int uncompBits = startIndex+1; //uncompressedbits
-	//unsigned int uncompLimit =  (uint32_t) (ceil((8*count)/(1+magBits+precBits)));
-		beforeDp = 0;
-		afterDp = 0;
-		target = 1;
-		if(((allValues[ci] >> (uncompBits-target)) & (uint32_t) pow(2,target)-1) == 1) { //extract sign bit
-			signMultiplier = -1;
-		} else {
-			signMultiplier = 1;
-		}
-		uncompBits--;
-		if(uncompBits == 0) { //if we run out of space, move onto next byte
+
+	beforeDp = 0;
+	afterDp = 0;
+	target = 1;
+
+	//deal with sign
+	if(((allValues[ci] >> (uncompBits-target)) & (uint32_t) pow(2,target)-1) == 1) { //extract sign bit
+		signMultiplier = -1;
+	} else {
+		signMultiplier = 1;
+	}
+	uncompBits--;
+	if(uncompBits == 0) { //if we run out of space, move onto next byte
+		ci--;
+		uncompBits = 8;
+	}
+
+	//deal with magnitude bits
+	target = magBits; //extract magnitude
+	while(target != 0) {
+		if(target > uncompBits) { //trying to extract more bits than available in current byte
+			//find out the number of useful bits we have (it'll be on RHS) AND to get it then move on
+			beforeDp = beforeDp | (((allValues[ci]) & (uint32_t) pow(2, uncompBits)-1) << (target-uncompBits));
 			ci--;
+			target = target - uncompBits;
 			uncompBits = 8;
-		}
-		target = magBits; //extract magnitude
-		while(target != 0) {
-			if(target > uncompBits) { //trying to extract more bits than available in current byte
-				//find out the number of useful bits we have (it'll be on RHS) AND to get it then move on
-				beforeDp = beforeDp | (((allValues[ci]) & (uint32_t) pow(2, uncompBits)-1) << (target-uncompBits));
+		} else { //got what we want in the current byte
+			beforeDp =  beforeDp | ((allValues[ci] >> (uncompBits-target) & (uint32_t) pow(2, target)-1));
+			uncompBits = uncompBits - target;
+			target = 0;
+			if(uncompBits == 0) {
 				ci--;
-				target = target - uncompBits;
 				uncompBits = 8;
-			} else { //got what we want in the current byte
-				beforeDp =  beforeDp | ((allValues[ci] >> (uncompBits-target) & (uint32_t) pow(2, target)-1));
-				uncompBits = uncompBits - target;
-				target = 0;
-				if(uncompBits == 0) {
-					ci--;
-					uncompBits = 8;
-				}
 			}
 		}
-		target = precBits;
-		while(target != 0) {
-			if(target > uncompBits) { //trying to extract more bits than available in current byte
-				afterDp = (afterDp | ((allValues[ci]) & (uint32_t) pow(2, uncompBits)-1)) << (target-uncompBits);
+	}
+
+	//deal with precision bits
+	target = precBits;
+	while(target != 0) {
+		if(target > uncompBits) { //trying to extract more bits than available in current byte
+			afterDp = (afterDp | ((allValues[ci]) & (uint32_t) pow(2, uncompBits)-1)) << (target-uncompBits);
+			ci--;
+			target = target - uncompBits;
+			uncompBits = 8;
+		} else { //got what we want in the current byte
+			afterDp = afterDp | ((((allValues[ci] >> (uncompBits-target)) & (uint32_t) pow(2, target)-1)));
+			uncompBits = uncompBits - target;
+			target = 0;
+			if(uncompBits == 0) {
 				ci--;
-				target = target - uncompBits;
 				uncompBits = 8;
-			} else { //got what we want in the current byte
-				afterDp = afterDp | ((((allValues[ci] >> (uncompBits-target)) & (uint32_t) pow(2, target)-1)));
-				uncompBits = uncompBits - target;
-				target = 0;
-				if(uncompBits == 0) {
-					ci--;
-					uncompBits = 8;
-				}
 			}
 		}
+	}
 	return signMultiplier * (beforeDp + ((float) afterDp) / divider);
 }
 
@@ -867,15 +833,11 @@ float getSingleVariableBitValue(unsigned char *allValues, unsigned int byteCount
  *		6. precBits - Number of bits that have been used to represent precision in the 24 bit notation.
  */
 void insertSingleVariableBitValue (unsigned char *allValues, unsigned int byteCount, unsigned int targetIndex, float value, unsigned int magBits, unsigned int precBits) {
-	//take the float value and split it into notation needed
-	//zero ot and insert
 	int startByte = floor(targetIndex*(1+magBits+precBits)/8);
 	int startIndex = (targetIndex*(1+magBits+precBits)) % 8;
 	startByte =  byteCount-1-startByte;
 	startIndex = 7-startIndex;
-	//similar to compress code
-unsigned int ci = startByte;
-
+	unsigned int ci = startByte;
 	int j;
 	unsigned int space = startIndex;
 	unsigned int target = 1;
@@ -962,7 +924,7 @@ unsigned int ci = startByte;
 			uci = 0;
 			target = precBits;
 		}
-		while(target != 0) {//} && uci >= 0) { //deal with prec bits
+		while(target != 0) {//deal with prec bits
 			if(space >= target) { //If we can fit target into current compressed byte
 				allValues[ci] = ((((uint32_t)pow(2, 8)-1) - ((uint32_t)pow(2,space)-1)) & allValues[ci]);
 				allValues[ci] = allValues[ci] | (split.afterDecimal[uci] << (space-target));
