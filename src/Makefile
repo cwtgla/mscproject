@@ -9,7 +9,7 @@ IFLAG=-I$(ZFPINC)
 LFLAG=-L$(ZFPLIB)
 
 evaluate: compressor.o zfp_example.o
-	$(CC) analysis.c compressor.o zfp_example.o $(LFLAG) $(LIBS) $(LIBS2) -o evaluate
+	$(CC) analysis.c compressor.o zfp_example.o $(LFLAG) $(LIBS) $(LIBS2) -o evaluate -O
 
 test: compressor.o
 	$(CC) compressor.o tests.c $(LIBS) -o test

@@ -200,7 +200,7 @@ void transform24BitCompression() {
 		for(i = 0; i < 150; i++) {
 			for(j = 0; j < 150; j++) {
 				for(k = 0; k < 90; k++) {
-					printf("%d %d %d\n", i,j,k);
+					//printf("%d %d %d\n", i,j,k);
 					update24BitCompressedValue(i,j,k);
 					update24BitCompressedValue(i,j,k);
 					update24BitCompressedValue(i,j,k);
