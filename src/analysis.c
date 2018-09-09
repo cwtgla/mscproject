@@ -134,38 +134,38 @@ float update24Value(int i, int j, int k, struct compressedVal *values) {
 	float tmp = 0.0f;
 	int divisor = 0;
 	//float current = values[F3D2C(150,150,0,0,0,i,j,k)];
-	float current = get24BitCompressedValue(values, F3D2C(150,150,0,0,0,i,j,k), 5, 18);
+	float current = getSingle24BitValue(values, F3D2C(150,150,0,0,0,i,j,k), 5, 18);
 
 	if(getIndex(i-1,j,k)!=-1) {
-		tmp+=get24BitCompressedValue(values, F3D2C(150,150,0,0,0,i-1,j,k), 5, 18);
+		tmp+=getSingle24BitValue(values, F3D2C(150,150,0,0,0,i-1,j,k), 5, 18);
 		divisor++;
 	}
 	if(getIndex(i+1,j,k)!=-1){
-		tmp+=get24BitCompressedValue(values, F3D2C(150,150,0,0,0,i+1,j,k), 5, 18);
+		tmp+=getSingle24BitValue(values, F3D2C(150,150,0,0,0,i+1,j,k), 5, 18);
 		//tmp+=values[F3D2C(150,150,0,0,0,i+1,j,k)];
 		divisor++;
 	}
 	if(getIndex(i,j-1,k) != -1){
-		tmp+=get24BitCompressedValue(values, F3D2C(150,150,0,0,0,i,j-1,k), 5, 18);
+		tmp+=getSingle24BitValue(values, F3D2C(150,150,0,0,0,i,j-1,k), 5, 18);
 	//	tmp+=values[F3D2C(150,150,0,0,0,i,j-1,k)];
 		divisor++;
 	}
 	if(getIndex(i,j+1,k)!=-1){
-		tmp+=get24BitCompressedValue(values, F3D2C(150,150,0,0,0,i,j+1,k), 5, 18);
+		tmp+=getSingle24BitValue(values, F3D2C(150,150,0,0,0,i,j+1,k), 5, 18);
 		//tmp+=values[F3D2C(150,150,0,0,0,i,j+1,k)];
 		divisor++;
 	}
 	if(getIndex(i,j,k-1)!=-1){
-		tmp+=get24BitCompressedValue(values, F3D2C(150,150,0,0,0,i,j,k-1), 5, 18);
+		tmp+=getSingle24BitValue(values, F3D2C(150,150,0,0,0,i,j,k-1), 5, 18);
 	//	tmp+=values[F3D2C(150,150,0,0,0,i,j,k-1)];
 		divisor++;
 	}
 	if(getIndex(i,j,k+1)!=-1){
-		tmp+=get24BitCompressedValue(values, F3D2C(150,150,0,0,0,i,j,k+1), 5, 18);
+		tmp+=getSingle24BitValue(values, F3D2C(150,150,0,0,0,i,j,k+1), 5, 18);
 		//tmp+=values[F3D2C(150,150,0,0,0,i,j,k+1)];
 		divisor++;
 	}
-	storeValueAs24Bit(values, current+(tmp/divisor), F3D2C(150,150,0,0,0,i,j,k), 5, 18);
+	insertSingle24BitValue(values, current+(tmp/divisor), F3D2C(150,150,0,0,0,i,j,k), 5, 18);
 	//values[F3D2C(150,150,0,0,0,i,j,k)]=current+(tmp/divisor);
 }
 
@@ -284,9 +284,9 @@ void compressionRatioAnalysis() {
 	//run options are compressionRatio analysis or compression overhead analysis
 	int main() {
 		//compressionRatioAnalysis();
-		uncompressedTransformation();
+		//uncompressedTransformation();
 		transform24();
-
+		//make arrays global? faster code
 
 		return 0;
 	}

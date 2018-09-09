@@ -266,7 +266,8 @@ struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned i
 				target = magBits;
 			}
 
-			while (target != 0 && uci >= 0) {	//While we have bits to insert and we've got bytes to extract from
+			// while (target != 0 && uci >= 0) {	//While we have bits to insert and we've got bytes to extract from
+			while (target != 0) {	//While we have bits to insert and we've got bytes to extract from
 				if (space >= target) { //If we can fit the current values byte into the compressed byte
 					compressedData[i].data[ci] = compressedData[i].data[ci] | (value.beforeDecimal[uci] << (space-target));
 					space = space - target;
@@ -491,7 +492,7 @@ void insertSingle24BitValue(struct compressedVal *allValues, float updatedValue,
 				target = magBits;
 			}
 
-			while (target != 0 && uci >= 0) {	//While we have bits to insert and we've got bytes to extract from
+			while (target != 0){//} && uci >= 0) {	//While we have bits to insert and we've got bytes to extract from
 				if (space >= target) { //If we can fit the current values byte into the compressed byte
 					allValues[index].data[ci] = allValues[index].data[ci] | (value.beforeDecimal[uci] << (space-target));
 					space = space - target;
@@ -572,7 +573,7 @@ unsigned char *getVariableBitCompressedData(float *uncompressedData, unsigned in
 			uci = 0; //uci becomes 0
 			target = magBits; //target becomes 4
 		}
-		while(target != 0 && uci >= 0) { //deal with magnitude bits
+		while(target != 0) {//} && uci >= 0) { //deal with magnitude bits
 			if(space >= target) { //If we can fit target into current compressed byte
 				compressedData[ci] = compressedData[ci] | (value.beforeDecimal[uci] << (space-target));
 				space = space - target;
@@ -604,7 +605,7 @@ unsigned char *getVariableBitCompressedData(float *uncompressedData, unsigned in
 			uci = 0;
 			target = precBits;
 		}
-		while(target != 0 && uci >= 0) { //deal with magnitude bits
+		while(target != 0) {//} && uci >= 0) { //deal with magnitude bits
 			if(space >= target) { //If we can fit target into current compressed byte
 				compressedData[ci] = compressedData[ci] | (value.afterDecimal[uci] << (space-target));
 				space = space - target;
@@ -874,8 +875,7 @@ void insertSingleVariableBitValue (unsigned char *allValues, unsigned int byteCo
 	startIndex = 7-startIndex;
 	//similar to compress code
 unsigned int ci = startByte;
-	printf("start byte is %d start index is %d\n", startByte, startIndex);
-	printf("value before is %u\n", allValues[startByte]);
+
 	int j;
 	unsigned int space = startIndex;
 	unsigned int target = 1;
@@ -891,7 +891,7 @@ unsigned int ci = startByte;
 	int currentCount = startIndex;
 	int ind = ci;
 	while(totalToZero != 0) {
-		printf("setting byte %d ind %d to 0\n", ind, currentCount);
+
 		allValues[ind] &= ~(1UL << currentCount);
 		currentCount--;
 		totalToZero--;
@@ -900,24 +900,18 @@ unsigned int ci = startByte;
 			ind--;
 		}
 	}
-	printf("%u before sign set\n", allValues[ci]);
-	// printf("value after is %u\n", values[ci]);
-	// printf("value after is %u\n", values[ci-1]);
-	// printf("value after is %u\n", values[ci-2]);
+
 	unsigned int uci = 0; //current floats index
 
 		target = 1;
 		split = splitFloat(value, multiplier);
 
 		if(value < 0) { //need to deal with -ve sign
-			printf("less than 0\n");
+
 			allValues[ci] = allValues[ci
 				] | (1 << (startIndex));
 		}
-		//space--;
 
-		printf("%u after sign set\n", allValues[ci]);
-		printf("space %d\n", space);
 		if(space==0) { //move onto next compressed byte if we have to
 			ci--;
 			space = 8;
@@ -932,15 +926,13 @@ unsigned int ci = startByte;
 			uci = 0; //uci becomes 0
 			target = magBits; //target becomes 4
 		}
-		printf("before mag space %d target %d\n", space, target);
-		while(target != 0 && uci >= 0) { //deal with magnitude bits
+
+		//while(target != 0 && uci >= 0) { //deal with magnitude bits
+		while(target != 0) {//} && uci >= 0) { //deal with magnitude bits
 			if(space >= target) { //If we can fit target into current compressed byte, need to store whats behind
-				//values[ci] = values[ci]
-				//values[ci] = ((((uint32_t)pow(2, 8)-1) - ((uint32_t)pow(2,8-space)-1)) & values[ci])
-			//	values[ci] &= ~ //how many bits to clear
-				printf("values before %u\n", allValues[ci]);
+
 				allValues[ci] = allValues[ci] | (split.beforeDecimal[uci] << (space-target));
-				printf("values after %u\n", allValues[ci]);
+
 				space = space - target;
 				if(space == 0) {
 					ci--;
@@ -954,11 +946,7 @@ unsigned int ci = startByte;
 					target = 0;
 				}
 			} else { //trying to deal with more bits than space
-				//values[ci] &= ~((uint32_t) pow(2,target-space)-1);
-				//values[ci] = ((((uint32_t)pow(2, 8)-1) - ((uint32_t)pow(2,space)-1)) & values[ci]);
-				printf("values before %u\n", allValues[ci]);
 				allValues[ci] = allValues[ci] | (split.beforeDecimal[uci] >> (target-space)); 
-				printf("values after %u\n", allValues[ci]);
 				ci--;
 				target = target - space;
 				space = 8;
@@ -974,7 +962,7 @@ unsigned int ci = startByte;
 			uci = 0;
 			target = precBits;
 		}
-		while(target != 0 && uci >= 0) { //deal with prec bits
+		while(target != 0) {//} && uci >= 0) { //deal with prec bits
 			if(space >= target) { //If we can fit target into current compressed byte
 				allValues[ci] = ((((uint32_t)pow(2, 8)-1) - ((uint32_t)pow(2,space)-1)) & allValues[ci]);
 				allValues[ci] = allValues[ci] | (split.afterDecimal[uci] << (space-target));
@@ -998,6 +986,4 @@ unsigned int ci = startByte;
 				space = 8;
 			}
 		}
-	//}
-	//return compressedData; void method
 }
