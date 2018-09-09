@@ -316,7 +316,7 @@ MU_TEST(testGetSingle24BitValueAndDecompress) {
 	int i;
 	float individualValue = 0;
 	for(i = 0; i < uncompressedCount; i++) {
-		individualValue = get24BitCompressedValue(compressedData, i, 5, 18);
+		individualValue = getSingle24BitValue(compressedData, i, 5, 18);
 		mu_assert(uncompressedData[i] == individualValue, "ERROR in testIndividual24BitCompressAndDecompress (1-5-18): Individual decompressed value not working as expected");
 	}
 	free(uncompressedData);
@@ -329,7 +329,7 @@ MU_TEST(testGetSingle24BitValueAndDecompress) {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
 	for(i = 0; i < uncompressedCount; i++) {
-		individualValue = get24BitCompressedValue(compressedData, i, 7, 16);
+		individualValue = getSingle24BitValue(compressedData, i, 7, 16);
 		mu_assert(uncompressedData[i] == individualValue, "ERROR in testIndividual24BitCompressAndDecompress (1-7-16): Individual decompressed value not working as expected");
 	}
 	free(uncompressedData);
@@ -342,7 +342,7 @@ MU_TEST(testGetSingle24BitValueAndDecompress) {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 13, 10);
 	for(i = 0; i < uncompressedCount; i++) {
-		individualValue = get24BitCompressedValue(compressedData, i, 13, 10);
+		individualValue = getSingle24BitValue(compressedData, i, 13, 10);
 		//deal with some precision being lost
 		mu_assert(.25 > fabs(uncompressedData[i] - individualValue), "ERROR in test24BitRateDecompression (1-13-10): compressed bytes dont match expected");
 	}
@@ -356,7 +356,7 @@ MU_TEST(testGetSingle24BitValueAndDecompress) {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 20, 3);
 	for(i = 0; i < uncompressedCount; i++) {
-		individualValue = get24BitCompressedValue(compressedData, i, 20, 3);
+		individualValue = getSingle24BitValue(compressedData, i, 20, 3);
 		//deal with some precision being lost
 		mu_assert(1/pow(10,numberOfDigits(3)-1) > fabs(uncompressedData[i] - individualValue), "ERROR in testIndividual24BitCompressAndDecompress (1-20-3): Individual decompressed value not working as expected");
 	}
@@ -370,7 +370,7 @@ MU_TEST(testGetSingle24BitValueAndDecompress) {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 15, 8);
 	for(i = 0; i < uncompressedCount; i++) {
-		individualValue = get24BitCompressedValue(compressedData, i, 15, 8);
+		individualValue = getSingle24BitValue(compressedData, i, 15, 8);
 		mu_assert(uncompressedData[i] == individualValue, "ERROR in testIndividual24BitCompressAndDecompress (1-15-8): Individual decompressed value not working as expected");
 	}
 	free(uncompressedData);
@@ -389,7 +389,7 @@ MU_TEST(testInsertSingle24BitValueAndCompress) {
 	float junk = 0.0;
 	float *uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	struct compressedVal *compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 5, 18);
-	storeValueAs24Bit(compressedData, 31.15115, 4, 5, 18);
+	insertSingle24BitValue(compressedData, 31.15115, 4, 5, 18);
 	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-5-18): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-5-18): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-5-18): Compressing and inserting new values not working as expected");
@@ -401,7 +401,7 @@ MU_TEST(testInsertSingle24BitValueAndCompress) {
 	testDataset = "../data/test_datasets/24bit/5lines_7mag_16prec.txt";
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
-	storeValueAs24Bit(compressedData, 127.1491, 4, 7, 16);
+	insertSingle24BitValue(compressedData, 127.1491, 4, 7, 16);
 	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
@@ -413,7 +413,7 @@ MU_TEST(testInsertSingle24BitValueAndCompress) {
 	testDataset = "../data/test_datasets/24bit/5lines_13mag_10prec.txt";
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 13, 10);
-	storeValueAs24Bit(compressedData, 8191.131, 4, 13, 10);
+	insertSingle24BitValue(compressedData, 8191.131, 4, 13, 10);
 	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-13-10): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-13-10): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-13-10): Compressing and inserting new values not working as expected");
@@ -425,7 +425,7 @@ MU_TEST(testInsertSingle24BitValueAndCompress) {
 	testDataset = "../data/test_datasets/24bit/5lines_15mag_8prec.txt";
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 15, 8);
-	storeValueAs24Bit(compressedData, 32767.44, 4, 15, 8);
+	insertSingle24BitValue(compressedData, 32767.44, 4, 15, 8);
 	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-15-8): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-15-8): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-15-8): Compressing and inserting new values not working as expected");
@@ -437,7 +437,7 @@ MU_TEST(testInsertSingle24BitValueAndCompress) {
 	testDataset = "../data/test_datasets/24bit/5lines_7mag_16prec.txt";
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = get24BitCompressedData(uncompressedData, uncompressedCount, 7, 16);
-	storeValueAs24Bit(compressedData, 127.1491, 4, 7, 16);
+	insertSingle24BitValue(compressedData, 127.1491, 4, 7, 16);
 	mu_assert(compressedData[0].data[2] == compressedData[4].data[2], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[1] == compressedData[4].data[1], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
 	mu_assert(compressedData[0].data[0] == compressedData[4].data[0], "ERROR in testSingle24BitCompress (1-7-16): Compressing and inserting new values not working as expected");
@@ -569,7 +569,7 @@ MU_TEST(testGetSingleVariableBitValueAndDecompress) {
 	float extractedVal;
 	unsigned char *compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 4, 7);
 	for(i = 0; i < uncompressedCount; i++) {
-		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i, 4, 7);
+		extractedVal = getSingleVariableBitValue(compressedData, compressedCount, i, 4, 7);
 		mu_assert(uncompressedData[i] == extractedVal, "ERROR IN testGetVariableBitDecompressedValue (1-4-7): Individual value isnt being retrieved and decompressed as expected");
 	}
 
@@ -579,7 +579,7 @@ MU_TEST(testGetSingleVariableBitValueAndDecompress) {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 11, 10);
 	for(i = 0; i < uncompressedCount; i++) {
-		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i, 11, 10);
+		extractedVal = getSingleVariableBitValue(compressedData, compressedCount, i, 11, 10);
 		mu_assert(uncompressedData[i] == extractedVal, "ERROR IN testGetVariableBitDecompressedValue (1-11-10): Individual value isnt being retrieved and decompressed as expected");
 	}
 
@@ -589,7 +589,7 @@ MU_TEST(testGetSingleVariableBitValueAndDecompress) {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 5, 10);
 	for(i = 0; i < uncompressedCount; i++) {
-		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i, 5, 10);
+		extractedVal = getSingleVariableBitValue(compressedData, compressedCount, i, 5, 10);
 		mu_assert(uncompressedData[i] == extractedVal, "ERROR IN testGetVariableBitDecompressedValue (1-5-10): Individual value isnt being retrieved and decompressed as expected");
 	}
 
@@ -599,7 +599,7 @@ MU_TEST(testGetSingleVariableBitValueAndDecompress) {
 	uncompressedData = getData(testDataset, &uncompressedCount, &junk, &junk, &junk);
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 7, 12);
 	for(i = 0; i < uncompressedCount; i++) {
-		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i, 7, 12);
+		extractedVal = getSingleVariableBitValue(compressedData, compressedCount, i, 7, 12);
 		mu_assert(uncompressedData[i] == extractedVal, "ERROR IN testGetVariableBitDecompressedValue (1-7-12): Individual value isnt being retrieved and decompressed as expected");
 	}
 }
@@ -620,9 +620,9 @@ MU_TEST(testInsertSingleVariableBitValueAndCompress) {
 	unsigned char *compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 4, 7);
 	for(i = 0; i < 4; i++) {
 		//grab value 1 index ahead and move it to current index and verify the move was successful
-		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i+1, 4, 7); //grab value 1 ahead
-		insertVariableBitValue(compressedData, compressedCount, i, extractedVal, 4, 7);
-		mu_assert(extractedVal == getVariableBitDecompressedValue(compressedData, compressedCount, i, 4, 7), "ERROR IN testInsertVariableBitValue (1-4-7): Mismatch between inserted value and the value retrived after insertion");
+		extractedVal = getSingleVariableBitValue(compressedData, compressedCount, i+1, 4, 7); //grab value 1 ahead
+		insertSingleVariableBitValue(compressedData, compressedCount, i, extractedVal, 4, 7);
+		mu_assert(extractedVal == getSingleVariableBitValue(compressedData, compressedCount, i, 4, 7), "ERROR IN testInsertVariableBitValue (1-4-7): Mismatch between inserted value and the value retrived after insertion");
 	}
 	free(uncompressedData);
 	free(compressedData);
@@ -634,9 +634,9 @@ MU_TEST(testInsertSingleVariableBitValueAndCompress) {
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 11, 10);
 	for(i = 0; i < 4; i++) {
 		//grab value 1 index ahead and move it to current index and verify the move was successful
-		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i+1, 11, 10); //grab value 1 ahead
-		insertVariableBitValue(compressedData, compressedCount, i, extractedVal, 11, 10);
-		mu_assert(extractedVal == getVariableBitDecompressedValue(compressedData, compressedCount, i, 11, 10), "ERROR IN testInsertVariableBitValue (1-11-10): Mismatch between inserted value and the value retrived after insertion");
+		extractedVal = getSingleVariableBitValue(compressedData, compressedCount, i+1, 11, 10); //grab value 1 ahead
+		insertSingleVariableBitValue(compressedData, compressedCount, i, extractedVal, 11, 10);
+		mu_assert(extractedVal == getSingleVariableBitValue(compressedData, compressedCount, i, 11, 10), "ERROR IN testInsertVariableBitValue (1-11-10): Mismatch between inserted value and the value retrived after insertion");
 	}
 	free(uncompressedData);
 	free(compressedData);
@@ -648,9 +648,9 @@ MU_TEST(testInsertSingleVariableBitValueAndCompress) {
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 5, 10);
 	for(i = 0; i < 4; i++) {
 		//grab value 1 index ahead and move it to current index and verify the move was successful
-		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i+1, 5, 10); //grab value 1 ahead
-		insertVariableBitValue(compressedData, compressedCount, i, extractedVal, 5, 10);
-		mu_assert(extractedVal == getVariableBitDecompressedValue(compressedData, compressedCount, i, 5, 10), "ERROR IN testInsertVariableBitValue (1-5-10): Mismatch between inserted value and the value retrived after insertion");
+		extractedVal = getSingleVariableBitValue(compressedData, compressedCount, i+1, 5, 10); //grab value 1 ahead
+		insertSingleVariableBitValue(compressedData, compressedCount, i, extractedVal, 5, 10);
+		mu_assert(extractedVal == getSingleVariableBitValue(compressedData, compressedCount, i, 5, 10), "ERROR IN testInsertVariableBitValue (1-5-10): Mismatch between inserted value and the value retrived after insertion");
 	}
 	free(uncompressedData);
 	free(compressedData);
@@ -662,9 +662,9 @@ MU_TEST(testInsertSingleVariableBitValueAndCompress) {
 	compressedData = getVariableBitCompressedData(uncompressedData, uncompressedCount, &compressedCount, 7, 12);
 	for(i = 0; i < 4; i++) {
 		//grab value 1 index ahead and move it to current index and verify the move was successful
-		extractedVal = getVariableBitDecompressedValue(compressedData, compressedCount, i+1, 7, 12); //grab value 1 ahead
-		insertVariableBitValue(compressedData, compressedCount, i, extractedVal, 7, 12);
-		mu_assert(extractedVal == getVariableBitDecompressedValue(compressedData, compressedCount, i, 7, 12), "ERROR IN testInsertVariableBitValue (1-7-12): Mismatch between inserted value and the value retrived after insertion");
+		extractedVal = getSingleVariableBitValue(compressedData, compressedCount, i+1, 7, 12); //grab value 1 ahead
+		insertSingleVariableBitValue(compressedData, compressedCount, i, extractedVal, 7, 12);
+		mu_assert(extractedVal == getSingleVariableBitValue(compressedData, compressedCount, i, 7, 12), "ERROR IN testInsertVariableBitValue (1-7-12): Mismatch between inserted value and the value retrived after insertion");
 	}
 	free(uncompressedData);
 	free(compressedData);

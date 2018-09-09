@@ -23,23 +23,23 @@ unsigned int *getVerificationData(char *absFilePath, unsigned int *dataLength);
 
 unsigned int numDigits (unsigned int numBits);
 
-struct runlengthEntry *getRunlengthCompressedData(float *values, unsigned int count, unsigned int *newCount);
+struct runlengthEntry *getRunlengthCompressedData(float *allValues, unsigned int count, unsigned int *newCount);
 
 float *getRunlengthDecompressedData(struct runlengthEntry *compressedValues, unsigned int count, unsigned int *newCount);
 
 struct compressedVal *get24BitCompressedData(float *uncompressedData, unsigned int count, unsigned int magBits, unsigned int precBits);
 
-float *get24BitDecompressedData(struct compressedVal *values, unsigned int count, unsigned int magBits, unsigned int precBits);
+float *get24BitDecompressedData(struct compressedVal *allValues, unsigned int count, unsigned int magBits, unsigned int precBits);
 
-float get24BitCompressedValue(struct compressedVal *allValues, unsigned int index, unsigned int magBits, unsigned int precBits);
+float getSingle24BitValue(struct compressedVal *allValues, unsigned int index, unsigned int magBits, unsigned int precBits);
 
-void storeValueAs24Bit(struct compressedVal *allValues, float updatedValue, unsigned int index, unsigned int magBits, unsigned int precBits);
+void insertSingle24BitValue(struct compressedVal *allValues, float updatedValue, unsigned int index, unsigned int magBits, unsigned int precBits);
 
 unsigned char *getVariableBitCompressedData(float *uncompressedData, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits);
 
-float *getVariableBitDecompressedData(unsigned char *values, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits);
+float *getVariableBitDecompressedData(unsigned char *allValues, unsigned int count, unsigned int *newCount, unsigned int magBits, unsigned int precBits);
 
-float getVariableBitDecompressedValue(unsigned char *values, unsigned int count, unsigned int targetIndex, unsigned int magBits, unsigned int precBits);
+float getSingleVariableBitValue(unsigned char *allValues, unsigned int count, unsigned int targetIndex, unsigned int magBits, unsigned int precBits);
 
-void insertVariableBitValue (unsigned char *values, unsigned int count, unsigned int targetIndex, float value, unsigned int magBits, unsigned int precBits);
+void insertSingleVariableBitValue (unsigned char *allValues, unsigned int count, unsigned int targetIndex, float value, unsigned int magBits, unsigned int precBits);
 #endif
