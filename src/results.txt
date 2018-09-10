@@ -1,0 +1,27 @@
+
+Running compression speed tests
+Average compression times
+Runlength: 0.013171 seconds
+ZFP: 0.116863 seconds
+24 Bit Lossy: 0.080418 seconds
+21 Bit Lossy: 0.117007 seconds
+18 Bit Lossy: 0.112390 seconds
+15 Bit Lossy: 0.111003 seconds
+12 Bit Lossy: 0.098646 seconds
+Average Decompression times
+Runlength: 0.000001 seconds
+24 Bit Lossy: 0.158150 seconds
+21 Bit Lossy: 0.178427 seconds
+18 Bit Lossy: 0.174625 seconds
+15 Bit Lossy: 0.192604 seconds
+12 Bit Lossy: 0.200505 seconds
+
+Datasets read in!
+Running analysis
+Testing evaluating compression overhead...
+Time taken for algorithm on uncompressed data (averaged over 1 interations)  = 0.514608
+Time taken for algorithm on 24 bit compressed data (averaged over 1 interations)  = 65.408138
+Time taken for algorithm on 21 bit compressed data (averaged over 1 interations)  = 96.339664
+Time taken for algorithm on 18 bit compressed data (averaged over 1 interations)  = 90.633120
+Time taken for algorithm on 15 bit compressed data (averaged over 1 interations)  = 79.909330
+Time taken for algorithm on 12 bit compressed data (averaged over 1 interations)  = 72.295360
