@@ -706,15 +706,15 @@ int main() {
 	}
 
 	printf("Running compression speed tests\n");
-	compressionSpeedAnalysis();
-	decompressionSpeedAnalysis();
+	//compressionSpeedAnalysis();
+	//decompressionSpeedAnalysis();
 	printf("\n");
 
 	printf("Datasets read in!\n");
 	printf("Running analysis\n");
 	printf("Testing evaluating compression overhead...\n");
-	transformUncompressed();
-	transform24BitCompression();
+	//transformUncompressed();
+	//transform24BitCompression();
 	transformNonByteAligned21Compression();
 	transformNonByteAligned18Compression();
 	transformNonByteAligned15Compression();
