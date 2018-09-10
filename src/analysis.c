@@ -87,33 +87,33 @@ float update21BitCompressedValue(int i, int j, int k) {
 	for(fileInd=0; fileInd < numDatasets; fileInd++) {
 		tmpValue = 0.0f;
 		divisor = 0;
-		currentValue = getSingleVariableBitValue(lossy21[fileInd], stats[i].var21Count, F3D2C(150,150,0,0,0,i,j,k), 5, 15);
+		currentValue = getSingleVariableBitValue(lossy21[fileInd], stats[fileInd].var21Count, F3D2C(150,150,0,0,0,i,j,k), 5, 15);
 
 		if(getIndex(i-1,j,k)!=-1) {
-			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[i].var21Count, F3D2C(150,150,0,0,0,i-1,j,k), 5, 15);
+			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[fileInd].var21Count, F3D2C(150,150,0,0,0,i-1,j,k), 5, 15);
 			divisor++;
 		}
 		if(getIndex(i+1,j,k)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[i].var21Count,  F3D2C(150,150,0,0,0,i+1,j,k), 5, 15);
+			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[fileInd].var21Count,  F3D2C(150,150,0,0,0,i+1,j,k), 5, 15);
 			divisor++;
 		}
 		if(getIndex(i,j-1,k) != -1){
-			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[i].var21Count,  F3D2C(150,150,0,0,0,i,j-1,k), 5, 15);
+			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[fileInd].var21Count,  F3D2C(150,150,0,0,0,i,j-1,k), 5, 15);
 			divisor++;
 		}
 		if(getIndex(i,j+1,k)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[i].var21Count,  F3D2C(150,150,0,0,0,i,j+1,k), 5, 15);
+			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[fileInd].var21Count,  F3D2C(150,150,0,0,0,i,j+1,k), 5, 15);
 			divisor++;
 		}
 		if(getIndex(i,j,k-1)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[i].var21Count,  F3D2C(150,150,0,0,0,i,j,k-1), 5, 15);
+			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[fileInd].var21Count,  F3D2C(150,150,0,0,0,i,j,k-1), 5, 15);
 			divisor++;
 		}
 		if(getIndex(i,j,k+1)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[i].var21Count,  F3D2C(150,150,0,0,0,i,j,k+1), 5, 15);
+			tmpValue+= getSingleVariableBitValue(lossy21[fileInd], stats[fileInd].var21Count,  F3D2C(150,150,0,0,0,i,j,k+1), 5, 15);
 			divisor++;
 		}
-		insertSingleVariableBitValue(lossy21[fileInd], stats[i].var21Count, F3D2C(150,150,0,0,0,i,j,k), currentValue + (tmpValue/divisor), 5, 15);
+		insertSingleVariableBitValue(lossy21[fileInd], stats[fileInd].var21Count, F3D2C(150,150,0,0,0,i,j,k), currentValue + (tmpValue/divisor), 5, 15);
 	}
 }
 
@@ -130,33 +130,33 @@ float update18BitCompressedValue(int i, int j, int k) {
 	for(fileInd=0; fileInd < numDatasets; fileInd++) {
 		tmpValue = 0.0f;
 		divisor = 0;
-		currentValue = getSingleVariableBitValue(lossy18[fileInd],stats[i].var18Count,  F3D2C(150,150,0,0,0,i,j,k), 5, 12);
+		currentValue = getSingleVariableBitValue(lossy18[fileInd],stats[fileInd].var18Count,  F3D2C(150,150,0,0,0,i,j,k), 5, 12);
 
 		if(getIndex(i-1,j,k)!=-1) {
-			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[i].var18Count, F3D2C(150,150,0,0,0,i-1,j,k), 5, 12);
+			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[fileInd].var18Count, F3D2C(150,150,0,0,0,i-1,j,k), 5, 12);
 			divisor++;
 		}
 		if(getIndex(i+1,j,k)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[i].var18Count, F3D2C(150,150,0,0,0,i+1,j,k), 5, 12);
+			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[fileInd].var18Count, F3D2C(150,150,0,0,0,i+1,j,k), 5, 12);
 			divisor++;
 		}
 		if(getIndex(i,j-1,k) != -1){
-			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[i].var18Count, F3D2C(150,150,0,0,0,i,j-1,k), 5, 12);
+			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[fileInd].var18Count, F3D2C(150,150,0,0,0,i,j-1,k), 5, 12);
 			divisor++;
 		}
 		if(getIndex(i,j+1,k)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[i].var18Count,  F3D2C(150,150,0,0,0,i,j+1,k), 5, 12);
+			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[fileInd].var18Count,  F3D2C(150,150,0,0,0,i,j+1,k), 5, 12);
 			divisor++;
 		}
 		if(getIndex(i,j,k-1)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[i].var18Count,  F3D2C(150,150,0,0,0,i,j,k-1), 5, 12);
+			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[fileInd].var18Count,  F3D2C(150,150,0,0,0,i,j,k-1), 5, 12);
 			divisor++;
 		}
 		if(getIndex(i,j,k+1)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[i].var18Count, F3D2C(150,150,0,0,0,i,j,k+1), 5, 12);
+			tmpValue+= getSingleVariableBitValue(lossy18[fileInd], stats[fileInd].var18Count, F3D2C(150,150,0,0,0,i,j,k+1), 5, 12);
 			divisor++;
 		}
-		insertSingleVariableBitValue(lossy18[fileInd], stats[i].var18Count, F3D2C(150,150,0,0,0,i,j,k), currentValue + (tmpValue/divisor), 5, 12);
+		insertSingleVariableBitValue(lossy18[fileInd], stats[fileInd].var18Count, F3D2C(150,150,0,0,0,i,j,k), currentValue + (tmpValue/divisor), 5, 12);
 	}
 }
 
@@ -173,33 +173,33 @@ float update15BitCompressedValue(int i, int j, int k) {
 	for(fileInd=0; fileInd < numDatasets; fileInd++) {
 		tmpValue = 0.0f;
 		divisor = 0;
-		currentValue = getSingleVariableBitValue(lossy15[fileInd], stats[i].var15Count, F3D2C(150,150,0,0,0,i,j,k), 5, 9);
+		currentValue = getSingleVariableBitValue(lossy15[fileInd], stats[fileInd].var15Count, F3D2C(150,150,0,0,0,i,j,k), 5, 9);
 
 		if(getIndex(i-1,j,k)!=-1) {
-			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[i].var15Count, F3D2C(150,150,0,0,0,i-1,j,k), 5, 9);
+			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[fileInd].var15Count, F3D2C(150,150,0,0,0,i-1,j,k), 5, 9);
 			divisor++;
 		}
 		if(getIndex(i+1,j,k)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[i].var15Count, F3D2C(150,150,0,0,0,i+1,j,k), 5, 9);
+			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[fileInd].var15Count, F3D2C(150,150,0,0,0,i+1,j,k), 5, 9);
 			divisor++;
 		}
 		if(getIndex(i,j-1,k) != -1){
-			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[i].var15Count, F3D2C(150,150,0,0,0,i,j-1,k), 5, 9);
+			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[fileInd].var15Count, F3D2C(150,150,0,0,0,i,j-1,k), 5, 9);
 			divisor++;
 		}
 		if(getIndex(i,j+1,k)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[i].var15Count, F3D2C(150,150,0,0,0,i,j+1,k), 5, 9);
+			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[fileInd].var15Count, F3D2C(150,150,0,0,0,i,j+1,k), 5, 9);
 			divisor++;
 		}
 		if(getIndex(i,j,k-1)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[i].var15Count, F3D2C(150,150,0,0,0,i,j,k-1), 5, 9);
+			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[fileInd].var15Count, F3D2C(150,150,0,0,0,i,j,k-1), 5, 9);
 			divisor++;
 		}
 		if(getIndex(i,j,k+1)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[i].var15Count, F3D2C(150,150,0,0,0,i,j,k+1), 5, 9);
+			tmpValue+= getSingleVariableBitValue(lossy15[fileInd], stats[fileInd].var15Count, F3D2C(150,150,0,0,0,i,j,k+1), 5, 9);
 			divisor++;
 		}
-		insertSingleVariableBitValue(lossy15[fileInd], stats[i].var15Count, F3D2C(150,150,0,0,0,i,j,k), currentValue + (tmpValue/divisor), 5, 9);
+		insertSingleVariableBitValue(lossy15[fileInd], stats[fileInd].var15Count, F3D2C(150,150,0,0,0,i,j,k), currentValue + (tmpValue/divisor), 5, 9);
 	}
 }
 
@@ -216,33 +216,33 @@ float update12BitCompressedValue(int i, int j, int k) {
 	for(fileInd=0; fileInd < numDatasets; fileInd++) {
 		tmpValue = 0.0f;
 		divisor = 0;
-		currentValue = getSingleVariableBitValue(lossy12[fileInd], stats[i].var12Count, F3D2C(150,150,0,0,0,i,j,k), 5, 6);
+		currentValue = getSingleVariableBitValue(lossy12[fileInd], stats[fileInd].var12Count, F3D2C(150,150,0,0,0,i,j,k), 5, 6);
 
 		if(getIndex(i-1,j,k)!=-1) {
-			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[i].var12Count, F3D2C(150,150,0,0,0,i-1,j,k), 5, 6);
+			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[fileInd].var12Count, F3D2C(150,150,0,0,0,i-1,j,k), 5, 6);
 			divisor++;
 		}
 		if(getIndex(i+1,j,k)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[i].var12Count, F3D2C(150,150,0,0,0,i+1,j,k), 5, 6);
+			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[fileInd].var12Count, F3D2C(150,150,0,0,0,i+1,j,k), 5, 6);
 			divisor++;
 		}
 		if(getIndex(i,j-1,k) != -1){
-			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[i].var12Count, F3D2C(150,150,0,0,0,i,j-1,k), 5, 6);
+			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[fileInd].var12Count, F3D2C(150,150,0,0,0,i,j-1,k), 5, 6);
 			divisor++;
 		}
 		if(getIndex(i,j+1,k)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[i].var12Count, F3D2C(150,150,0,0,0,i,j+1,k), 5, 6);
+			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[fileInd].var12Count, F3D2C(150,150,0,0,0,i,j+1,k), 5, 6);
 			divisor++;
 		}
 		if(getIndex(i,j,k-1)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[i].var12Count, F3D2C(150,150,0,0,0,i,j,k-1), 5, 6);
+			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[fileInd].var12Count, F3D2C(150,150,0,0,0,i,j,k-1), 5, 6);
 			divisor++;
 		}
 		if(getIndex(i,j,k+1)!=-1){
-			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[i].var12Count, F3D2C(150,150,0,0,0,i,j,k+1), 5, 6);
+			tmpValue+= getSingleVariableBitValue(lossy12[fileInd], stats[fileInd].var12Count, F3D2C(150,150,0,0,0,i,j,k+1), 5, 6);
 			divisor++;
 		}
-		insertSingleVariableBitValue(lossy12[fileInd], stats[i].var12Count, F3D2C(150,150,0,0,0,i,j,k), currentValue + (tmpValue/divisor), 5, 6);
+		insertSingleVariableBitValue(lossy12[fileInd], stats[fileInd].var12Count, F3D2C(150,150,0,0,0,i,j,k), currentValue + (tmpValue/divisor), 5, 6);
 	}
 }
 
@@ -309,15 +309,15 @@ void transformUncompressed() {
 			for(j = 0; j < 150; j++) {
 				for(k = 0; k < 90; k++) {
 					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
-					updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
+					// updateUncompressedValue(i,j,k);
 				}
 			}
 		}
@@ -338,15 +338,15 @@ void transformNonByteAligned12Compression() {
 			for(j = 0; j < 150; j++) {
 				for(k = 0; k < 90; k++) {
 					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
-					update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
+					// update12BitCompressedValue(i,j,k);
 				}
 			}
 		}
@@ -367,15 +367,15 @@ void transformNonByteAligned15Compression() {
 			for(j = 0; j < 150; j++) {
 				for(k = 0; k < 90; k++) {
 					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
-					update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
+					// update15BitCompressedValue(i,j,k);
 				}
 			}
 		}
@@ -396,15 +396,15 @@ void transformNonByteAligned18Compression() {
 			for(j = 0; j < 150; j++) {
 				for(k = 0; k < 90; k++) {
 					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
-					update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
+					// update18BitCompressedValue(i,j,k);
 				}
 			}
 		}
@@ -424,16 +424,17 @@ void transformNonByteAligned21Compression() {
 		for(i = 0; i < 150; i++) {
 			for(j = 0; j < 150; j++) {
 				for(k = 0; k < 90; k++) {
+					//printf("%d %d %d\n", i,j,k);
 					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
-					update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
+					// update21BitCompressedValue(i,j,k);
 				}
 			}
 		}
@@ -502,15 +503,15 @@ void transform24BitCompression() {
 				for(k = 0; k < 90; k++) {
 					//printf("%d %d %d\n", i,j,k);
 					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
-					update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
+					// update24BitCompressedValue(i,j,k);
 				}
 			}
 		}
@@ -706,15 +707,15 @@ int main() {
 	}
 
 	printf("Running compression speed tests\n");
-	//compressionSpeedAnalysis();
-	//decompressionSpeedAnalysis();
+	compressionSpeedAnalysis();
+	decompressionSpeedAnalysis();
 	printf("\n");
 
 	printf("Datasets read in!\n");
 	printf("Running analysis\n");
 	printf("Testing evaluating compression overhead...\n");
-	//transformUncompressed();
-	//transform24BitCompression();
+	transformUncompressed();
+	transform24BitCompression();
 	transformNonByteAligned21Compression();
 	transformNonByteAligned18Compression();
 	transformNonByteAligned15Compression();
